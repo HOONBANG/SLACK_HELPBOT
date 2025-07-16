@@ -4,19 +4,20 @@ const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   socketMode: false,
+  appToken: process.env.SLACK_APP_TOKEN, // 필요 없으면 생략
   port: process.env.PORT || 3000,
 });
 
-// 사용자 멘션 시 버튼 포함 메시지 보내기
-app.event('app_mention', async ({ event, say }) => {
-  await say({
-    text: '무엇을 도와드릴까요?',
+app.event('app_mention', async ({ event, client }) => {
+  await client.chat.postMessage({
+    channel: event.channel,
+    text: '아래 버튼을 눌러 오늘 날씨를 확인하세요!',
     blocks: [
       {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '무엇을 도와드릴까요? 버튼을 눌러주세요!',
+          text: '*오늘 날씨를 알려드릴까요?*',
         },
       },
       {
@@ -36,14 +37,11 @@ app.event('app_mention', async ({ event, say }) => {
   });
 });
 
-// 버튼 클릭 처리
-app.action('weather_today', async ({ ack, body, client }) => {
-  await ack(); // 버튼 클릭 acknowledge
-
-  // 버튼 누른 사용자에게 DM 보내기
+app.action('weather_today', async ({ body, ack, client }) => {
+  await ack();
   await client.chat.postMessage({
-    channel: body.user.id,
-    text: '오늘 날씨는 맑음입니다. ☀️',
+    channel: body.user.id, // 개인 DM
+    text: '☀️ 오늘 날씨는 맑음입니다!',
   });
 });
 
@@ -51,4 +49,3 @@ app.action('weather_today', async ({ ack, body, client }) => {
   await app.start();
   console.log('⚡ SuperBot is running!');
 })();
-
