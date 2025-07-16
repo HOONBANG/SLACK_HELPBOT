@@ -6,6 +6,6 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "@slack/bolt": "^3.12.2"
+    "@slack/bolt": "^3.14.0"
   }
 }
