@@ -71,7 +71,7 @@ app.action(/.*/, async ({ ack, body, client }) => {
   const action = body.actions[0].action_id;
 
   const replies = {
-    it_support: 'IT 지원팀에 요청을 전달하겠습니다.',
+    it_support: 'GA매니저께 요청을 전달하겠습니다.',
     license_request: '필요한 라이선스 정보를 알려주세요.',
     hr_inquiry: 'HR 관련 문의사항을 말씀해주세요.',
     welfare_info: '복지 제도에 대한 안내를 도와드리겠습니다.',
