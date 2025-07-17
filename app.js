@@ -1,27 +1,28 @@
-const { App } = require('@slack/bolt');
+const { App, ExpressReceiver } = require('@slack/bolt');
+require('dotenv').config();
 
-// 환경변수에서 인증 정보 로드
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+// ExpressReceiver 설정 (HTTP endpoint 처리용)
+const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  socketMode: false,
-  appToken: process.env.SLACK_APP_TOKEN
+  endpoints: '/slack/events',
 });
 
-// 멘션 이벤트 처리
-app.event('app_mention', async ({ event, say }) => {
-  console.log('✅ SuperBot 멘션됨:', event);
+// Bolt App 생성
+const app = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  receiver
+});
 
-  await say({
-    thread_ts: event.ts, // 스레드에 메시지 전송
+// 멘션 시 스레드에 버튼 메시지 전송
+app.event('app_mention', async ({ event, client }) => {
+  await client.chat.postMessage({
+    channel: event.channel,
+    thread_ts: event.ts,
     text: '무엇을 도와드릴까요?',
     blocks: [
       {
         type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '*무엇을 도와드릴까요?* 아래 옵션 중 하나를 선택해 주세요.'
-        }
+        text: { type: 'mrkdwn', text: '*무엇을 도와드릴까요?* 아래 옵션 중 하나를 선택해 주세요.' }
       },
       {
         type: 'actions',
@@ -62,8 +63,8 @@ app.event('app_mention', async ({ event, say }) => {
   });
 });
 
-// 버튼 클릭 시 응답 처리
-app.action(/.*/, async ({ body, ack, say }) => {
+// 버튼 액션 핸들링
+app.action(/.*/, async ({ ack, body, client }) => {
   await ack();
 
   const user = `<@${body.user.id}>`;
@@ -79,12 +80,11 @@ app.action(/.*/, async ({ body, ack, say }) => {
 
   const replyText = replies[action] || '요청을 인식할 수 없습니다.';
 
-  await say({
+  await client.chat.postMessage({
+    channel: body.channel.id,
     thread_ts: body.message.ts,
     text: `${user}님, ${replyText}`
   });
-
-  console.log(`✅ 버튼 클릭됨: ${action} by ${user}`);
 });
 
 // 서버 실행
