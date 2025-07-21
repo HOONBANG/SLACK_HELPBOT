@@ -1,31 +1,46 @@
+const { App } = require("@slack/bolt");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { WebClient } = require("@slack/web-api");
-const dotenv = require("dotenv");
-
-dotenv.config();
+require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 10000;
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 const slackToken = process.env.SLACK_BOT_TOKEN;
 const web = new WebClient(slackToken);
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// ✅ 멘션 메시지 수신
+// Slack Events 처리
 app.post("/slack/events", async (req, res) => {
   const { event } = req.body;
 
-  if (event && event.type === "app_mention") {
-    const thread_ts = event.ts; // 스레드로 응답
+  // URL Verification
+  if (req.body.type === "url_verification") {
+    return res.send({ challenge: req.body.challenge });
+  }
+
+  // Bot 자신의 메시지는 무시
+  if (event.bot_id || event.subtype === "bot_message") {
+    return res.sendStatus(200);
+  }
+
+  // 멘션 이벤트 처리
+  if (event.type === "app_mention") {
+    const thread_ts = event.thread_ts || event.ts;
 
     await web.chat.postMessage({
       channel: event.channel,
       thread_ts,
-      text: "*도움이 필요하신가요? 아래 항목 중 선택해주세요.*",
+      text: "도움이 필요하신가요? 아래 항목 중 선택해주세요.",
       blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: "*도움이 필요하신가요? 아래 항목 중 선택해주세요.*"
+          }
+        },
         {
           type: "actions",
           elements: [
@@ -40,27 +55,26 @@ app.post("/slack/events", async (req, res) => {
         }
       ]
     });
-
-    return res.status(200).send();
   }
 
-  res.status(200).send();
+  res.sendStatus(200);
 });
 
-// ✅ 버튼 클릭 처리
-app.post("/interact", async (req, res) => {
+// 버튼 클릭 처리
+app.post("/slack/interactions", async (req, res) => {
   const payload = JSON.parse(req.body.payload);
-  const { user, channel, message, actions } = payload;
-
+  const { actions, channel, message, user } = payload;
   const actionId = actions[0].action_id;
   const thread_ts = message.ts;
 
-  let text = "";
   let blocks = [];
 
   if (actionId === "support_it") {
-    text = "*IT 지원 항목을 선택해주세요*";
     blocks = [
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: "*어떤 IT지원이 필요하신가요?*" }
+      },
       {
         type: "actions",
         elements: [
@@ -70,32 +84,43 @@ app.post("/interact", async (req, res) => {
       }
     ];
   } else if (actionId === "license") {
-    text = "*라이선스 요청 항목을 선택해주세요*";
     blocks = [
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: "*요청하실 라이선스를 선택해주세요.*" }
+      },
       {
         type: "actions",
         elements: [
           { type: "button", text: { type: "plain_text", text: "ADOBE" }, value: "ADOBE", action_id: "adobe" },
-          { type: "button", text: { type: "plain_text", text: "MS OFFICE" }, value: "MS OFFICE", action_id: "office_license" },
+          { type: "button", text: { type: "plain_text", text: "MS OFFICE" }, value: "MS OFFICE", action_id: "ms" },
           { type: "button", text: { type: "plain_text", text: "산돌구름" }, value: "산돌구름", action_id: "sandoll" },
-          { type: "button", text: { type: "plain_text", text: "기타" }, value: "기타", action_id: "etc_license" }
+          { type: "button", text: { type: "plain_text", text: "기타" }, value: "기타", action_id: "other_license" }
         ]
       }
     ];
   } else {
-    text = `*${actions[0].value}* 항목을 선택하셨습니다. 담당자가 곧 도와드릴게요.`;
+    // 선택된 버튼에 대해 단순 응답 메시지
+    await web.chat.postMessage({
+      channel: channel.id,
+      thread_ts,
+      text: `<@${user.id}> 님, "${actions[0].text.text}" 항목이 선택되었습니다.`
+    });
+    return res.sendStatus(200);
   }
 
   await web.chat.postMessage({
     channel: channel.id,
     thread_ts,
-    text,
+    text: "다음 항목을 선택해주세요.",
     blocks
   });
 
-  res.status(200).send();
+  res.sendStatus(200);
 });
 
-app.listen(port, () => {
-  console.log(`⚡ SuperBot is running on port ${port}`);
+// 서버 시작
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`⚡ SuperBot is running on port ${PORT}`);
 });
