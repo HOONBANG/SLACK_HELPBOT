@@ -1,95 +1,101 @@
-const { App, ExpressReceiver } = require('@slack/bolt');
-require('dotenv').config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const { WebClient } = require("@slack/web-api");
+const dotenv = require("dotenv");
 
-// ExpressReceiver 설정 (HTTP endpoint 처리용)
-const receiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
-  endpoints: '/slack/events',
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 10000;
+
+const slackToken = process.env.SLACK_BOT_TOKEN;
+const web = new WebClient(slackToken);
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// ✅ 멘션 메시지 수신
+app.post("/slack/events", async (req, res) => {
+  const { event } = req.body;
+
+  if (event && event.type === "app_mention") {
+    const thread_ts = event.ts; // 스레드로 응답
+
+    await web.chat.postMessage({
+      channel: event.channel,
+      thread_ts,
+      text: "*도움이 필요하신가요? 아래 항목 중 선택해주세요.*",
+      blocks: [
+        {
+          type: "actions",
+          elements: [
+            { type: "button", text: { type: "plain_text", text: "IT지원" }, value: "IT지원", action_id: "support_it" },
+            { type: "button", text: { type: "plain_text", text: "라이선스 요청" }, value: "라이선스 요청", action_id: "license" },
+            { type: "button", text: { type: "plain_text", text: "HR문의" }, value: "HR문의", action_id: "hr" },
+            { type: "button", text: { type: "plain_text", text: "서류 발급 요청" }, value: "서류 발급 요청", action_id: "docs" },
+            { type: "button", text: { type: "plain_text", text: "오피스" }, value: "오피스", action_id: "office" },
+            { type: "button", text: { type: "plain_text", text: "복지 안내" }, value: "복지 안내", action_id: "welfare" },
+            { type: "button", text: { type: "plain_text", text: "기타 문의" }, value: "기타 문의", action_id: "etc" }
+          ]
+        }
+      ]
+    });
+
+    return res.status(200).send();
+  }
+
+  res.status(200).send();
 });
 
-// Bolt App 생성
-const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  receiver
-});
+// ✅ 버튼 클릭 처리
+app.post("/interact", async (req, res) => {
+  const payload = JSON.parse(req.body.payload);
+  const { user, channel, message, actions } = payload;
 
-// 멘션 시 스레드에 버튼 메시지 전송
-app.event('app_mention', async ({ event, client }) => {
-  await client.chat.postMessage({
-    channel: event.channel,
-    thread_ts: event.ts,
-    text: '무엇을 도와드릴까요?',
-    blocks: [
+  const actionId = actions[0].action_id;
+  const thread_ts = message.ts;
+
+  let text = "";
+  let blocks = [];
+
+  if (actionId === "support_it") {
+    text = "*IT 지원 항목을 선택해주세요*";
+    blocks = [
       {
-        type: 'section',
-        text: { type: 'mrkdwn', text: '*무엇을 도와드릴까요?* 아래 옵션 중 하나를 선택해 주세요.' }
-      },
-      {
-        type: 'actions',
+        type: "actions",
         elements: [
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: 'IT지원' },
-            value: 'it_support',
-            action_id: 'it_support'
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '라이선스 요청' },
-            value: 'license_request',
-            action_id: 'license_request'
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: 'HR 문의' },
-            value: 'hr_inquiry',
-            action_id: 'hr_inquiry'
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '복지 안내' },
-            value: 'welfare_info',
-            action_id: 'welfare_info'
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '서류 발급 요청' },
-            value: 'document_request',
-            action_id: 'document_request'
-          }
+          { type: "button", text: { type: "plain_text", text: "장비 수리" }, value: "장비 수리", action_id: "repair" },
+          { type: "button", text: { type: "plain_text", text: "드라이브 이동 요청" }, value: "드라이브 이동 요청", action_id: "drive" }
         ]
       }
-    ]
+    ];
+  } else if (actionId === "license") {
+    text = "*라이선스 요청 항목을 선택해주세요*";
+    blocks = [
+      {
+        type: "actions",
+        elements: [
+          { type: "button", text: { type: "plain_text", text: "ADOBE" }, value: "ADOBE", action_id: "adobe" },
+          { type: "button", text: { type: "plain_text", text: "MS OFFICE" }, value: "MS OFFICE", action_id: "office_license" },
+          { type: "button", text: { type: "plain_text", text: "산돌구름" }, value: "산돌구름", action_id: "sandoll" },
+          { type: "button", text: { type: "plain_text", text: "기타" }, value: "기타", action_id: "etc_license" }
+        ]
+      }
+    ];
+  } else {
+    text = `*${actions[0].value}* 항목을 선택하셨습니다. 담당자가 곧 도와드릴게요.`;
+  }
+
+  await web.chat.postMessage({
+    channel: channel.id,
+    thread_ts,
+    text,
+    blocks
   });
+
+  res.status(200).send();
 });
 
-// 버튼 액션 핸들링
-app.action(/.*/, async ({ ack, body, client }) => {
-  await ack();
-
-  const user = `<@${body.user.id}>`;
-  const action = body.actions[0].action_id;
-
-  const replies = {
-    it_support: 'GA매니저께 요청을 전달하겠습니다.',
-    license_request: '필요한 라이선스 정보를 알려주세요.',
-    hr_inquiry: 'HR 관련 문의사항을 말씀해주세요.',
-    welfare_info: '복지 제도에 대한 안내를 도와드리겠습니다.',
-    document_request: '필요한 서류 종류와 용도를 알려주세요.'
-  };
-
-  const replyText = replies[action] || '요청을 인식할 수 없습니다.';
-
-  await client.chat.postMessage({
-    channel: body.channel.id,
-    thread_ts: body.message.ts,
-    text: `${user}님, ${replyText}`
-  });
-});
-
-// 서버 실행
-(async () => {
-  const port = process.env.PORT || 3000;
-  await app.start(port);
+app.listen(port, () => {
   console.log(`⚡ SuperBot is running on port ${port}`);
-})();
+});
