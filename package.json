@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@slack/bolt": "^3.14.0",
+    "@slack/events-api": "^3.0.1",
+    "@slack/web-api": "^7.9.3",
     "dotenv": "^17.2.0"
   }
 }
