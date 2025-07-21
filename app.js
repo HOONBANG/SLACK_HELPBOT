@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
 
-// Slack 앱 초기화
+// 초기화
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
@@ -10,7 +10,7 @@ const app = new App({
   port: process.env.PORT || 10000,
 });
 
-// 1단계 버튼 메시지 구성 (7개 버튼을 5개 + 2개로 분할)
+// 1단계 메시지 구성
 function createFirstLevelMessage(ts) {
   return {
     thread_ts: ts,
@@ -21,7 +21,6 @@ function createFirstLevelMessage(ts) {
         text: {
           type: 'plain_text',
           text: '도움이 필요하신가요?',
-          emoji: true,
         },
       },
       {
@@ -30,13 +29,13 @@ function createFirstLevelMessage(ts) {
           createButton('IT지원', 0),
           createButton('라이선스 요청', 1),
           createButton('HR문의', 2),
-          createButton('서류 발급 요청', 3),
-          createButton('오피스', 4),
         ],
       },
       {
         type: 'actions',
         elements: [
+          createButton('서류 발급 요청', 3),
+          createButton('오피스', 4),
           createButton('복지 안내', 5),
           createButton('기타 문의', 6),
         ],
@@ -59,7 +58,7 @@ function createButton(label, index) {
   };
 }
 
-// 2단계 버튼 메시지 구성
+// 2단계 메시지 구성
 function createSecondLevelMessage(value, ts) {
   let options = [];
 
@@ -81,9 +80,8 @@ function createSecondLevelMessage(value, ts) {
       {
         type: 'section',
         text: {
-          type: 'plain_text', // 볼드 제거
+          type: 'plain_text',
           text: displayText,
-          emoji: true,
         },
       },
       {
@@ -103,44 +101,55 @@ function createSecondLevelMessage(value, ts) {
   };
 }
 
-// 앱 멘션 시 1단계 버튼 출력
+// @mention 감지 및 1단계 버튼 출력
 app.event('app_mention', async ({ event, client }) => {
   try {
-    await client.chat.postMessage(createFirstLevelMessage(event.ts));
+    await client.chat.postMessage({
+      channel: event.channel,
+      ...createFirstLevelMessage(event.ts),
+    });
   } catch (error) {
     console.error('Error handling app_mention:', error);
   }
 });
 
-// 1단계 버튼 클릭 시 2단계 메시지 출력 또는 바로 응답
+// 1단계 버튼 클릭 처리
 app.action(/^first_level_\d+$/, async ({ body, ack, client, action }) => {
   await ack();
 
   const selected = action.value;
   const ts = body.message.ts;
+  const channel = body.channel.id;
 
   if (selected === 'IT지원' || selected === '라이선스 요청') {
-    await client.chat.postMessage(createSecondLevelMessage(selected, ts));
+    await client.chat.postMessage({
+      channel,
+      ...createSecondLevelMessage(selected, ts),
+    });
   } else {
     await client.chat.postMessage({
+      channel,
       thread_ts: ts,
       text: `${selected} 요청을 접수하였습니다.`,
     });
   }
 });
 
-// 2단계 버튼 클릭 시 확인 메시지 출력
+// 2단계 버튼 클릭 처리
 app.action(/^second_level_\d+$/, async ({ body, ack, client, action }) => {
   await ack();
 
   const ts = body.message.ts;
+  const channel = body.channel.id;
+
   await client.chat.postMessage({
+    channel,
     thread_ts: ts,
     text: `${action.value} 요청이 접수되었습니다.`,
   });
 });
 
-// 앱 실행
+// 앱 시작
 (async () => {
   await app.start();
   console.log(`⚡ SuperBot is running on port ${process.env.PORT || 10000}`);
