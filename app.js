@@ -101,7 +101,7 @@ app.post("/slack/interactions", async (req, res) => {
         blocks: [
           {
             type: "section",
-            text: { type: "mrkdwn", text: "*어떤 IT지원을 원하시나요?*" },
+            text: { type: "plain_text", text: "어떤 IT지원을 원하시나요?" },
           },
           {
             type: "actions",
@@ -132,7 +132,7 @@ app.post("/slack/interactions", async (req, res) => {
         blocks: [
           {
             type: "section",
-            text: { type: "mrkdwn", text: "*요청할 라이선스를 선택해주세요.*" },
+            text: { type: "plain_text", text: "요청할 라이선스를 선택해주세요." },
           },
           {
             type: "actions",
