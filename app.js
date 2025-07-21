@@ -42,7 +42,12 @@ app.event('app_mention', async ({ event, client }) => {
               type: 'button',
               text: { type: 'plain_text', text: '서류 발급 요청' },
               action_id: 'btn_docs'
-            },
+            }
+            ]
+        }
+        {
+          type: 'actions',
+          elements: [
             {
               type: 'button',
               text: { type: 'plain_text', text: '오피스' },
