@@ -161,12 +161,12 @@ app.action(/btn_.*/, async ({ ack }) => {
 
 // Render 배포 확인용 라우트
 receiver.router.get('/', (req, res) => {
-  res.send('Slack SuperBot is running ✅');
+  res.send('Slack HelpBot is running ✅');
 });
 
 // 앱 실행
 (async () => {
   const port = process.env.PORT || 10000;
   await app.start(port);
-  console.log('⚡ SuperBot is running on port', port);
+  console.log('⚡ HelpBot is running on port', port);
 })();
