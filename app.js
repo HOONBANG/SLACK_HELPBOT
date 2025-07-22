@@ -1,29 +1,30 @@
 const { App, ExpressReceiver } = require('@slack/bolt');
 require('dotenv').config();
 
-// ExpressReceiver 생성: 커스텀 엔드포인트를 위한 설정
+// ExpressReceiver 설정
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   endpoints: {
     events: '/slack/events',
-    actions: '/slack/interactions', // 버튼 클릭 처리 경로
+    actions: '/slack/interactions',
   },
 });
 
-// Bolt App 초기화
+// Bolt 앱 초기화
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   receiver,
   appToken: process.env.SLACK_APP_TOKEN,
   socketMode: false,
+  port: process.env.PORT || 10000,
 });
 
-// 멘션 이벤트: 첫 질문 + 버튼 UI
+// 앱이 멘션되었을 때 버튼 UI 노출
 app.event('app_mention', async ({ event, client }) => {
   try {
     await client.chat.postMessage({
       channel: event.channel,
-      thread_ts: event.ts, // 스레드에 메시지 남기기
+      thread_ts: event.ts,
       text: '무엇을 도와드릴까요?',
       blocks: [
         {
@@ -31,22 +32,69 @@ app.event('app_mention', async ({ event, client }) => {
           text: { type: 'plain_text', text: '무엇을 도와드릴까요?' },
         },
         {
+          type: 'section',
+          text: { type: 'mrkdwn', text: '*IT지원이 필요해요.*' },
+        },
+        {
           type: 'actions',
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: 'IT지원' },
-              action_id: 'btn_it_support',
+              text: { type: 'plain_text', text: '업무 장비 수리' },
+              action_id: 'btn_repair',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '라이선스 요청' },
-              action_id: 'btn_license_request',
+              text: { type: 'plain_text', text: '드라이브 이동 요청' },
+              action_id: 'btn_drive',
+            },
+          ],
+        },
+        {
+          type: 'section',
+          text: { type: 'mrkdwn', text: '*라이선스를 요청하고 싶어요.*' },
+        },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: 'MS OFFICE' },
+              action_id: 'btn_ms_office',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: 'HR문의' },
-              action_id: 'btn_hr',
+              text: { type: 'plain_text', text: 'ADOBE' },
+              action_id: 'btn_adobe',
+            },
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: '산돌구름' },
+              action_id: 'btn_sandoll',
+            },
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: '기타 라이선스' },
+              action_id: 'btn_other_license',
+            },
+          ],
+        },
+        {
+          type: 'section',
+          text: { type: 'mrkdwn', text: '*HR 관련 문의*' },
+        },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: '근태 문의' },
+              action_id: 'btn_attendance',
+            },
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: '연차 문의' },
+              action_id: 'btn_vacation',
             },
             {
               type: 'button',
@@ -56,22 +104,31 @@ app.event('app_mention', async ({ event, client }) => {
           ],
         },
         {
+          type: 'section',
+          text: { type: 'mrkdwn', text: '*오피스 관련 요청*' },
+        },
+        {
           type: 'actions',
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: '오피스' },
-              action_id: 'btn_office',
+              text: { type: 'plain_text', text: 'OA존 물품' },
+              action_id: 'btn_oa',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '복지 안내' },
-              action_id: 'btn_welfare',
+              text: { type: 'plain_text', text: '복합기 연결' },
+              action_id: 'btn_printer',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '기타 문의' },
-              action_id: 'btn_etc',
+              text: { type: 'plain_text', text: '구성원 자리 확인' },
+              action_id: 'btn_seat',
+            },
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: '기타 요청' },
+              action_id: 'btn_office_other',
             },
           ],
         },
@@ -82,83 +139,32 @@ app.event('app_mention', async ({ event, client }) => {
   }
 });
 
-// 버튼: IT지원 클릭
-app.action('btn_it_support', async ({ body, ack, client }) => {
-  await ack();
-  await client.chat.postMessage({
-    channel: body.channel.id,
-    thread_ts: body.message.ts,
-    text: '필요한 지원 항목을 선택해주세요.',
-    blocks: [
-      {
-        type: 'section',
-        text: { type: 'plain_text', text: '필요한 지원 항목을 선택해주세요.' },
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '장비 수리' },
-            action_id: 'btn_repair',
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '드라이브 이동 요청' },
-            action_id: 'btn_drive',
-          },
-        ],
-      },
-    ],
+// 모든 버튼 액션에 대해 ack 처리만 우선 적용 (기능은 이후 구현 가능)
+const allActionIds = [
+  'btn_repair',
+  'btn_drive',
+  'btn_ms_office',
+  'btn_adobe',
+  'btn_sandoll',
+  'btn_other_license',
+  'btn_attendance',
+  'btn_vacation',
+  'btn_docs',
+  'btn_oa',
+  'btn_printer',
+  'btn_seat',
+  'btn_office_other',
+];
+
+for (const actionId of allActionIds) {
+  app.action(actionId, async ({ ack }) => {
+    await ack();
+    // 나중에 각 버튼별 동작 추가 가능
   });
-});
+}
 
-// 버튼: 라이선스 요청 클릭
-app.action('btn_license_request', async ({ body, ack, client }) => {
-  await ack();
-  await client.chat.postMessage({
-    channel: body.channel.id,
-    thread_ts: body.message.ts,
-    text: '요청할 라이선스를 선택해주세요.',
-    blocks: [
-      {
-        type: 'section',
-        text: { type: 'plain_text', text: '요청할 라이선스를 선택해주세요.' },
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: 'ADOBE' },
-            action_id: 'btn_adobe',
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: 'MS OFFICE' },
-            action_id: 'btn_ms_office',
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '산돌구름' },
-            action_id: 'btn_sandoll',
-          },
-          {
-            type: 'button',
-            text: { type: 'plain_text', text: '기타' },
-            action_id: 'btn_other_license',
-          },
-        ],
-      },
-    ],
-  });
-});
-
-// 필요한 만큼 버튼 핸들러를 계속 추가 가능
-
-// 서버 시작
+// 앱 실행
 (async () => {
-  const port = process.env.PORT || 10000;
-  await app.start(port);
-  console.log(`⚡ SuperBot is running on port ${port}`);
+  await app.start();
+  console.log('⚡ SuperBot is running on port', process.env.PORT || 10000);
 })();
