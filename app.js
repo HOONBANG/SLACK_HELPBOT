@@ -105,7 +105,7 @@ app.event('app_mention', async ({ event, client }) => {
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: ':야자수:연차 문의' },
+              text: { type: 'plain_text', text: ':palm_tree:연차 문의' },
               action_id: 'btn_vacation',
             },
             {
@@ -127,7 +127,7 @@ app.event('app_mention', async ({ event, client }) => {
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: ':공구_상자:OA존 물품' },
+              text: { type: 'plain_text', text: ':toolbox:OA존 물품' },
               action_id: 'btn_oa',
             },
             {
@@ -137,7 +137,7 @@ app.event('app_mention', async ({ event, client }) => {
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: ':2개의_상반신_그림자:구성원 자리 확인' },
+              text: { type: 'plain_text', text: ':busts_in_silhouette:구성원 자리 확인' },
               action_id: 'btn_desk',
             },
             {
