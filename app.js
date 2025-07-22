@@ -100,17 +100,17 @@ app.event('app_mention', async ({ event, client }) => {
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: '근태 문의' },
+              text: { type: 'plain_text', text: ':clock10:근태 문의' },
               action_id: 'btn_attendance',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '연차 문의' },
+              text: { type: 'plain_text', text: ':야자수:연차 문의' },
               action_id: 'btn_vacation',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '서류 발급 요청' },
+              text: { type: 'plain_text', text: ':pencil:서류 발급 요청' },
               action_id: 'btn_docs',
             },
           ],
@@ -127,17 +127,17 @@ app.event('app_mention', async ({ event, client }) => {
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: 'OA존 물품' },
+              text: { type: 'plain_text', text: ':공구_상자:OA존 물품' },
               action_id: 'btn_oa',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '복합기 연결' },
+              text: { type: 'plain_text', text: ':printer:복합기 연결' },
               action_id: 'btn_printer',
             },
             {
               type: 'button',
-              text: { type: 'plain_text', text: '구성원 자리 확인' },
+              text: { type: 'plain_text', text: ':2개의_상반신_그림자:구성원 자리 확인' },
               action_id: 'btn_desk',
             },
             {
