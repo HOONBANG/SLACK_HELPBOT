@@ -1,7 +1,7 @@
 const { App, ExpressReceiver } = require('@slack/bolt');
 require('dotenv').config();
 
-// ExpressReceiver 설정
+// ExpressReceiver: 슬랙 인터랙션 수신용
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
   endpoints: {
@@ -10,7 +10,7 @@ const receiver = new ExpressReceiver({
   },
 });
 
-// Bolt 앱 초기화
+// Bolt App 초기화
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   receiver,
@@ -19,21 +19,27 @@ const app = new App({
   port: process.env.PORT || 10000,
 });
 
-// 앱이 멘션되었을 때 버튼 UI 노출
+// 앱 멘션 시 모든 버튼 한 번에 노출
 app.event('app_mention', async ({ event, client }) => {
   try {
     await client.chat.postMessage({
       channel: event.channel,
-      thread_ts: event.ts,
+      thread_ts: event.ts, // 스레드에 답변
       text: '무엇을 도와드릴까요?',
       blocks: [
         {
           type: 'section',
-          text: { type: 'plain_text', text: '무엇을 도와드릴까요?' },
+          text: {
+            type: 'plain_text',
+            text: '무엇을 도와드릴까요?'
+          }
         },
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*IT지원이 필요해요.*' },
+          text: {
+            type: 'mrkdwn',
+            text: '*IT지원이 필요해요.*'
+          }
         },
         {
           type: 'actions',
@@ -52,7 +58,10 @@ app.event('app_mention', async ({ event, client }) => {
         },
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*라이선스를 요청하고 싶어요.*' },
+          text: {
+            type: 'mrkdwn',
+            text: '*라이선스를 요청하고 싶어요.*'
+          }
         },
         {
           type: 'actions',
@@ -81,7 +90,10 @@ app.event('app_mention', async ({ event, client }) => {
         },
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*HR 관련 문의*' },
+          text: {
+            type: 'mrkdwn',
+            text: '*HR 관련 문의*'
+          }
         },
         {
           type: 'actions',
@@ -105,7 +117,10 @@ app.event('app_mention', async ({ event, client }) => {
         },
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*오피스 관련 요청*' },
+          text: {
+            type: 'mrkdwn',
+            text: '*오피스 관련 요청*'
+          }
         },
         {
           type: 'actions',
@@ -123,12 +138,12 @@ app.event('app_mention', async ({ event, client }) => {
             {
               type: 'button',
               text: { type: 'plain_text', text: '구성원 자리 확인' },
-              action_id: 'btn_seat',
+              action_id: 'btn_desk',
             },
             {
               type: 'button',
               text: { type: 'plain_text', text: '기타 요청' },
-              action_id: 'btn_office_other',
+              action_id: 'btn_other_office',
             },
           ],
         },
@@ -139,29 +154,10 @@ app.event('app_mention', async ({ event, client }) => {
   }
 });
 
-// 모든 버튼 액션에 대해 ack 처리만 우선 적용 (기능은 이후 구현 가능)
-const allActionIds = [
-  'btn_repair',
-  'btn_drive',
-  'btn_ms_office',
-  'btn_adobe',
-  'btn_sandoll',
-  'btn_other_license',
-  'btn_attendance',
-  'btn_vacation',
-  'btn_docs',
-  'btn_oa',
-  'btn_printer',
-  'btn_seat',
-  'btn_office_other',
-];
-
-for (const actionId of allActionIds) {
-  app.action(actionId, async ({ ack }) => {
-    await ack();
-    // 나중에 각 버튼별 동작 추가 가능
-  });
-}
+// 모든 버튼 액션은 ack만 일단 응답 (추후 필요 시 기능 추가)
+app.action(/btn_.*/, async ({ ack }) => {
+  await ack();
+});
 
 // 앱 실행
 (async () => {
