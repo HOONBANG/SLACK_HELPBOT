@@ -37,8 +37,8 @@ app.event('app_mention', async ({ event, client }) => {
         {
           type: 'section',
           text: {
-            type: 'plain_text',
-            text: ':computer:IT지원이 필요해요.',
+            type: 'mrkdwn',
+            text: '*IT지원 요청*',
           },
         },
         {
@@ -46,7 +46,7 @@ app.event('app_mention', async ({ event, client }) => {
           elements: [
             {
               type: 'button',
-              text: { type: 'plain_text', text: '장비 수리' },
+              text: { type: 'plain_text', text: ':computer:장비 수리' },
               action_id: 'btn_repair',
             },
             {
@@ -60,7 +60,7 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*라이선스를 요청하고 싶어요.*',
+            text: '*라이선스 신청*',
           },
         },
         {
