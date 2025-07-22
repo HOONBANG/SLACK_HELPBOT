@@ -31,7 +31,7 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'plain_text',
-            text: '무엇을 도와드릴까요?',
+            text: '안녕하세요! 무엇을 도와드릴까요? :blush:',
           },
         },
         {
