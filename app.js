@@ -19,7 +19,7 @@ const app = new App({
   port: process.env.PORT || 10000,
 });
 
-// 앱 멘션 시 모든 버튼 한 번에 노출
+// 슬랙 앱 멘션 시 버튼 블록 전체 노출
 app.event('app_mention', async ({ event, client }) => {
   try {
     await client.chat.postMessage({
@@ -31,15 +31,15 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'plain_text',
-            text: '무엇을 도와드릴까요?'
-          }
+            text: '무엇을 도와드릴까요?',
+          },
         },
         {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*IT지원이 필요해요.*'
-          }
+            text: '*IT지원이 필요해요.*',
+          },
         },
         {
           type: 'actions',
@@ -60,8 +60,8 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*라이선스를 요청하고 싶어요.*'
-          }
+            text: '*라이선스를 요청하고 싶어요.*',
+          },
         },
         {
           type: 'actions',
@@ -92,8 +92,8 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*HR 관련 문의*'
-          }
+            text: '*HR 관련 문의*',
+          },
         },
         {
           type: 'actions',
@@ -119,8 +119,8 @@ app.event('app_mention', async ({ event, client }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: '*오피스 관련 요청*'
-          }
+            text: '*오피스 관련 요청*',
+          },
         },
         {
           type: 'actions',
@@ -154,13 +154,19 @@ app.event('app_mention', async ({ event, client }) => {
   }
 });
 
-// 모든 버튼 액션은 ack만 일단 응답 (추후 필요 시 기능 추가)
+// 버튼 액션 처리 (기본 ack)
 app.action(/btn_.*/, async ({ ack }) => {
   await ack();
 });
 
+// Render 배포 확인용 라우트
+receiver.router.get('/', (req, res) => {
+  res.send('Slack SuperBot is running ✅');
+});
+
 // 앱 실행
 (async () => {
-  await app.start();
-  console.log('⚡ SuperBot is running on port', process.env.PORT || 10000);
+  const port = process.env.PORT || 10000;
+  await app.start(port);
+  console.log('⚡ SuperBot is running on port', port);
 })();
