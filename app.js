@@ -161,7 +161,7 @@ app.action('btn_repair', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. @U08L6553LEL)\n시점: \n증상: `,
+    text: `*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. <@U08L6553LEL>)\n시점: \n증상: `,
   });
 });
 
