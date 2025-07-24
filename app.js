@@ -159,6 +159,18 @@ app.action(/btn_.*/, async ({ ack }) => {
   await ack();
 });
 
+// "장비 수리" 버튼 클릭 시 메시지 전송
+app.action('btn_repair', async ({ ack, body, client }) => {
+  await ack(); // 버튼 클릭 응답
+
+  // 클릭한 유저가 속한 채널에 메시지 전송
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts, // 원래 메시지의 스레드로 답변
+    text: `언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. <@Hoon>)\n시점: \n증상: `,
+  });
+});
+
 // Render 배포 확인용 라우트
 receiver.router.get('/', (req, res) => {
   res.send('Slack HelpBot is running ✅');
