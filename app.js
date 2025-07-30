@@ -165,9 +165,22 @@ app.action('btn_repair', async ({ ack, body, client }) => {
   });
 });
 
+
+// "구글 드라이브" 버튼 처리
+app.action('btn_drive', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요?. \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유: `,
+  });
+});
+
 // 나머지 버튼 처리 (btn_repair 제외)
 app.action(/btn_.*/, async ({ ack, action }) => {
   if (action.action_id === 'btn_repair') return;
+  if (action.action_id === 'btn_drive') return;
   await ack();
 });
 
