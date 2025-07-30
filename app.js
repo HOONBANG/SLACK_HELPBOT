@@ -195,7 +195,18 @@ app.action('btn_adobe', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[ADOBE]* \n어떤 프로그램이 필요하신가요? \n• Photoshop \n• Premiere Pro \n• Illustrator \n• 기타 `,
+    text: `*[ADOBE]* \n어떤 프로그램이 필요하신가요? \n\n• Photoshop \n• Premiere Pro \n• Illustrator \n• 기타 `,
+  });
+});
+
+// "산돌구름" 버튼 처리
+app.action('btn_sandoll', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[산돌구름]* \n 산돌구름 회원가입(개인) 후 말씀 부탁드립니다. :blush: (cc. <@U08L6553LEL>) `,
   });
 });
 
@@ -205,6 +216,7 @@ app.action(/btn_.*/, async ({ ack, action }) => {
   if (action.action_id === 'btn_drive') return;
   if (action.action_id === 'btn_ms_office') return;
   if (action.action_id === 'btn_adobe') return;
+  if (action.action_id === 'btn_sandoll') return;
   await ack();
 });
 
