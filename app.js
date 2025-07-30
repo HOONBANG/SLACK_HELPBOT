@@ -173,7 +173,18 @@ app.action('btn_drive', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요?. \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유: `,
+    text: `*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유: `,
+  });
+});
+
+// "MS OFFICE" 버튼 처리
+app.action('btn_ms_office', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[MS OFFICE]* \n업무 상 MS OFFICE가 필요하신 경우가 있는지 말씀 부탁드립니다. \n※ 구글 워크스페이스 내 스프레드시트를 활용하고 있어 MS office를 전사 단위로 구매하고 있지 않습니다. `,
   });
 });
 
@@ -181,6 +192,7 @@ app.action('btn_drive', async ({ ack, body, client }) => {
 app.action(/btn_.*/, async ({ ack, action }) => {
   if (action.action_id === 'btn_repair') return;
   if (action.action_id === 'btn_drive') return;
+  if (action.action_id === 'btn_ms_office') return;
   await ack();
 });
 
