@@ -173,7 +173,7 @@ app.action('btn_drive', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유: `,
+    text: `*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? (cc. <@U08L6553LEL>) \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유: `,
   });
 });
 
@@ -184,7 +184,7 @@ app.action('btn_ms_office', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[MS OFFICE]* \n업무 상 MS OFFICE가 필요하신 경우가 있는지 말씀 부탁드립니다. \n\n※ 구글 워크스페이스 내 스프레드시트를 활용하고 있어 MS office를 전사 단위로 구매하고 있지 않습니다. `,
+    text: `*[MS OFFICE]* \n업무 상 MS OFFICE가 필요하신 경우가 있는지 말씀 부탁드립니다. (cc. <@U08L6553LEL>) \n\n※ 구글 워크스페이스 내 스프레드시트를 활용하고 있어 MS office를 전사 단위로 구매하고 있지 않습니다. `,
   });
 });
 
@@ -195,7 +195,7 @@ app.action('btn_adobe', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[ADOBE]* \n어떤 프로그램이 필요하신가요? \n\n• Photoshop \n• Premiere Pro \n• Illustrator \n• 기타 `,
+    text: `*[ADOBE]* \n어떤 프로그램이 필요하신가요? (cc. <@U08L6553LEL>) \n\n• Photoshop \n• Premiere Pro \n• Illustrator \n• 기타 `,
   });
 });
 
@@ -239,7 +239,7 @@ app.action('btn_vacation', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[:palm_tree:연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+    text: `*[:palm_tree:연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>) `,
   });
 });
 
@@ -261,7 +261,7 @@ app.action('btn_oa', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+    text: `*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>) `,
   });
 });
 
@@ -276,7 +276,7 @@ app.action('btn_printer', async ({ ack, body, client }) => {
 아래 두 가지 방법을 통해 지원을 받으실 수 있습니다.
 \n\n 1. 복합기 상단 QR코드 통해 A/S 요청
 \n 2. 복합기 업체 연락 - 제이에이솔루션 1566-3505
-\n - 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내) :blush: \n (cc. <@S07DF7YSKB4>) `,
+\n - 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내) :blush: \n (cc. <@U08L6553LEL>) `,
   });
 });
 
@@ -299,7 +299,7 @@ app.action('btn_other_office', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+    text: `*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>) `,
   });
 });
 
