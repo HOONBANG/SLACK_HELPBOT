@@ -228,7 +228,7 @@ app.action('btn_attendance', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[근태 문의]* \n근태 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>) `,
+    text: `*[:clock10:근태 문의]* \n근태 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>) `,
   });
 });
 
@@ -239,7 +239,7 @@ app.action('btn_vacation', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+    text: `*[:palm_tree:연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
   });
 });
 
@@ -250,22 +250,57 @@ app.action('btn_docs', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+    text: `*[:pencil:서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>) `,
   });
 });
 
-// 나머지 버튼 처리 (btn_repair 제외)
-app.action(/btn_.*/, async ({ ack, action }) => {
-  if (action.action_id === 'btn_repair') return;
-  if (action.action_id === 'btn_drive') return;
-  if (action.action_id === 'btn_ms_office') return;
-  if (action.action_id === 'btn_adobe') return;
-  if (action.action_id === 'btn_sandoll') return;
-  if (action.action_id === 'btn_other_license') return;
-  if (action.action_id === 'btn_attendance') return;
-  if (action.action_id === 'btn_vacation') return;
-  if (action.action_id === 'btn_docs') return;
-  await ack();
+// "OA존 물품" 버튼 처리
+app.action('btn_oa', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+  });
+});
+
+// "복합기 연결" 버튼 처리
+app.action('btn_printer', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우, 
+아래 두 가지 방법을 통해 지원을 받으실 수 있습니다.
+\n\n 1. 복합기 상단 QR코드 통해 A/S 요청
+\n 2. 복합기 업체 연락 - 제이에이솔루션 1566-3505
+\n - 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내) :blush: \n (cc. <@S07DF7YSKB4>) `,
+  });
+});
+
+// "구성원 자리 확인" 버튼 처리
+app.action('btn_desk', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. :blush: 
+\n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도> `,
+  });
+});
+
+// "기타 요청" 버튼 처리
+app.action('btn_other_office', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+  });
 });
 
 // Render 배포 확인용 라우트
