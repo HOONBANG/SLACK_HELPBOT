@@ -17,7 +17,7 @@ const app = new App({
   port: process.env.PORT || 10000,
 });
 
-// 버튼 메시지 출력용 함수
+// 버튼 메시지 블록 생성 함수
 const getBlocks = () => ([
   {
     type: 'section',
@@ -77,7 +77,7 @@ const getBlocks = () => ([
   },
 ]);
 
-// 멘션 시 버튼 노출
+// 앱 멘션 이벤트 핸들러 - 멘션받으면 버튼 메시지 띄우기
 app.event('app_mention', async ({ event, client }) => {
   try {
     await client.chat.postMessage({
@@ -91,20 +91,37 @@ app.event('app_mention', async ({ event, client }) => {
   }
 });
 
+// DM 여부 체크 함수
 const isDM = (channelId) => channelId.startsWith('D');
 
+// 버튼 클릭 시 응답 처리 함수
 const respond = async ({ ack, body, client, text }) => {
   await ack();
   const channel = body.channel.id;
-  const ts = body.message.ts;
+  const ts = body.message?.ts;
 
   const finalText = isDM(channel)
     ? `${text}\n\n※ 테스트 메시지입니다. 정식 요청은 <#chat_office> 채널에서 해주세요.`
-    : `${text}`;
+    : text;
 
-  await client.chat.postMessage({ channel, thread_ts: ts, text: finalText });
+  try {
+    if (isDM(channel)) {
+      // DM에서는 thread_ts 없이 일반 메시지로 보내기
+      await client.chat.postMessage({ channel, text: finalText });
+    } else {
+      // 공개 채널에서는 thread_ts 붙여서 스레드로 보내기 (ts가 없으면 그냥 보내기)
+      if (ts) {
+        await client.chat.postMessage({ channel, thread_ts: ts, text: finalText });
+      } else {
+        await client.chat.postMessage({ channel, text: finalText });
+      }
+    }
+  } catch (error) {
+    console.error('Error in respond():', error);
+  }
 };
 
+// 버튼별 응답 메시지 맵핑
 const buttonActions = {
   btn_repair: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. <@U08L6553LEL>) \n• 시점: \n• 증상:',
   btn_drive: '*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? (cc. <@U08L6553LEL>) \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유:',
@@ -116,17 +133,19 @@ const buttonActions = {
   btn_vacation: '*[:palm_tree:연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>)',
   btn_docs: '*[:pencil:서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>)',
   btn_oa: '*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
-  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n- 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)\n (cc. <@U08L6553LEL>)',
+  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n※ 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)\n (cc. <@U08L6553LEL>)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. :blush:\n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
   btn_other_office: '*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
 };
 
+// 버튼 액션 핸들러 등록
 for (const [action_id, message] of Object.entries(buttonActions)) {
   app.action(action_id, async ({ ack, body, client }) => {
     await respond({ ack, body, client, text: message });
   });
 }
 
+// 헬스체크용 기본 GET 라우터
 receiver.router.get('/', (req, res) => {
   res.send('Slack HelpBot is running ✅');
 });
