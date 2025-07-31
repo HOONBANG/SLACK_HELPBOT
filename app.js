@@ -77,7 +77,10 @@ const getBlocks = () => ([
   },
 ]);
 
-// 앱 멘션 이벤트 핸들러 - 멘션받으면 버튼 메시지 띄우기
+// DM 여부 체크 함수
+const isDM = (channelId) => channelId.startsWith('D');
+
+// 멘션 이벤트 - 공개 채널에서 멘션 시 버튼 메시지 띄우기
 app.event('app_mention', async ({ event, client }) => {
   try {
     await client.chat.postMessage({
@@ -91,35 +94,21 @@ app.event('app_mention', async ({ event, client }) => {
   }
 });
 
-// DM 여부 체크 함수
-const isDM = (channelId) => channelId.startsWith('D');
-
-// 버튼 클릭 시 응답 처리 함수
-const respond = async ({ ack, body, client, text }) => {
-  await ack();
-  const channel = body.channel.id;
-  const ts = body.message?.ts;
-
-  const finalText = isDM(channel)
-    ? `${text}\n\n※ 테스트 메시지입니다. 정식 요청은 <#chat_office> 채널에서 해주세요.`
-    : text;
-
+// DM에서 사용자가 메시지 보낼 때 버튼 메시지 띄우기
+app.event('message', async ({ event, client }) => {
   try {
-    if (isDM(channel)) {
-      // DM에서는 thread_ts 없이 일반 메시지로 보내기
-      await client.chat.postMessage({ channel, text: finalText });
-    } else {
-      // 공개 채널에서는 thread_ts 붙여서 스레드로 보내기 (ts가 없으면 그냥 보내기)
-      if (ts) {
-        await client.chat.postMessage({ channel, thread_ts: ts, text: finalText });
-      } else {
-        await client.chat.postMessage({ channel, text: finalText });
-      }
+    // DM 채널이며, 봇이 보낸 메시지가 아니면 응답
+    if (event.channel_type === 'im' && !event.bot_id) {
+      await client.chat.postMessage({
+        channel: event.channel,
+        text: '무엇을 도와드릴까요? :blush:',
+        blocks: getBlocks(),
+      });
     }
   } catch (error) {
-    console.error('Error in respond():', error);
+    console.error('Error handling DM message event:', error);
   }
-};
+});
 
 // 버튼별 응답 메시지 맵핑
 const buttonActions = {
@@ -133,9 +122,34 @@ const buttonActions = {
   btn_vacation: '*[:palm_tree:연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>)',
   btn_docs: '*[:pencil:서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>)',
   btn_oa: '*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
-  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n※ 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)\n (cc. <@U08L6553LEL>)',
+  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n- 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)\n (cc. <@U08L6553LEL>)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. :blush:\n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
   btn_other_office: '*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
+};
+
+// 버튼 클릭 시 응답 처리 함수
+const respond = async ({ ack, body, client, text }) => {
+  await ack();
+  const channel = body.channel.id;
+  const ts = body.message?.ts;
+
+  const finalText = isDM(channel)
+    ? `${text}\n\n※ 테스트 메시지입니다. 정식 요청은 <#chat_office> 채널에서 해주세요.`
+    : text;
+
+  try {
+    if (isDM(channel)) {
+      await client.chat.postMessage({ channel, text: finalText });
+    } else {
+      if (ts) {
+        await client.chat.postMessage({ channel, thread_ts: ts, text: finalText });
+      } else {
+        await client.chat.postMessage({ channel, text: finalText });
+      }
+    }
+  } catch (error) {
+    console.error('Error in respond():', error);
+  }
 };
 
 // 버튼 액션 핸들러 등록
