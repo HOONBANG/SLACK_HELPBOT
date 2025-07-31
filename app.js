@@ -206,7 +206,7 @@ app.action('btn_sandoll', async ({ ack, body, client }) => {
   await client.chat.postMessage({
     channel: body.channel.id,
     thread_ts: body.message.ts,
-    text: `*[산돌구름]* \n산돌구름 회원가입(개인) 후 말씀 부탁드립니다. :blush: \n (cc. <@U08L6553LEL>) `,
+    text: `*[산돌구름]* \n회사 구글 계정으로 산돌구름 회원가입(개인) 후 말씀 부탁드립니다. :blush: \n (cc. <@U08L6553LEL>) `,
   });
 });
 
@@ -273,10 +273,10 @@ app.action('btn_printer', async ({ ack, body, client }) => {
     channel: body.channel.id,
     thread_ts: body.message.ts,
     text: `*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우, 
-아래 두 가지 방법을 통해 지원을 받으실 수 있습니다.
-\n\n 1. 복합기 상단 QR코드 통해 A/S 요청
+아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:
+\n 1. 복합기 상단 QR코드 통해 A/S 요청
 \n 2. 복합기 업체 연락 - 제이에이솔루션 1566-3505
-\n - 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내) :blush: \n (cc. <@U08L6553LEL>) `,
+\n - 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내) \n (cc. <@U08L6553LEL>) `,
   });
 });
 
