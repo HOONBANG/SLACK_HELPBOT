@@ -134,7 +134,7 @@ const respond = async ({ ack, body, client, text }) => {
   const ts = body.message?.ts;
 
   const finalText = isDM(channel)
-    ? `${text}\n\n※ 테스트 메시지입니다. 정식 요청은 <https://bitelab.slack.com/archives/C04NUTT5771> 채널에서 해주세요.`
+    ? `${text}\n\n※ 테스트 메시지입니다. 정식 요청은 <#C04NUTT5771|chat_office> 채널에서 해주세요.`
     : text;
 
   try {
