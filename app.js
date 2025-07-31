@@ -221,6 +221,39 @@ app.action('btn_other_license', async ({ ack, body, client }) => {
   });
 });
 
+// "근태 문의" 버튼 처리
+app.action('btn_attendance', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[근태 문의]* \n근태 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>) `,
+  });
+});
+
+// "연차 문의" 버튼 처리
+app.action('btn_vacation', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[연차 문의]* \n연차 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+  });
+});
+
+// "서류 발급 요청" 버튼 처리
+app.action('btn_docs', async ({ ack, body, client }) => {
+  await ack(); // 여기서 1번만 호출
+
+  await client.chat.postMessage({
+    channel: body.channel.id,
+    thread_ts: body.message.ts,
+    text: `*[서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <@S07DF7YSKB4>) `,
+  });
+});
+
 // 나머지 버튼 처리 (btn_repair 제외)
 app.action(/btn_.*/, async ({ ack, action }) => {
   if (action.action_id === 'btn_repair') return;
@@ -229,6 +262,9 @@ app.action(/btn_.*/, async ({ ack, action }) => {
   if (action.action_id === 'btn_adobe') return;
   if (action.action_id === 'btn_sandoll') return;
   if (action.action_id === 'btn_other_license') return;
+  if (action.action_id === 'btn_attendance') return;
+  if (action.action_id === 'btn_vacation') return;
+  if (action.action_id === 'btn_docs') return;
   await ack();
 });
 
