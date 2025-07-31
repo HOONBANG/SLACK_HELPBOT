@@ -303,6 +303,55 @@ app.action('btn_other_office', async ({ ack, body, client }) => {
   });
 });
 
+// DM(Direct Message)으로 아무 텍스트를 보냈을 때 자동 응답
+app.event('message', async ({ event, client }) => {
+  try {
+    // DM 채널에서만 작동하도록 필터
+    if (event.channel_type === 'im' && !event.bot_id) {
+      await client.chat.postMessage({
+        channel: event.channel,
+        text: '안녕하세요! HelpBot입니다 :wave:\n\n아래 항목 중 해당하는 분야를 선택하시면 도와드릴게요.',
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '*무엇을 도와드릴까요?*',
+            },
+          },
+          {
+            type: 'actions',
+            elements: [
+              {
+                type: 'button',
+                text: { type: 'plain_text', text: 'IT 지원' },
+                action_id: 'btn_dm_it',
+              },
+              {
+                type: 'button',
+                text: { type: 'plain_text', text: '라이선스 신청' },
+                action_id: 'btn_dm_license',
+              },
+              {
+                type: 'button',
+                text: { type: 'plain_text', text: 'HR 문의' },
+                action_id: 'btn_dm_hr',
+              },
+              {
+                type: 'button',
+                text: { type: 'plain_text', text: '오피스 요청' },
+                action_id: 'btn_dm_office',
+              },
+            ],
+          },
+        ],
+      });
+    }
+  } catch (error) {
+    console.error('Error responding to DM:', error);
+  }
+});
+
 // Render 배포 확인용 라우트
 receiver.router.get('/', (req, res) => {
   res.send('Slack HelpBot is running ✅');
