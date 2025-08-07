@@ -117,9 +117,9 @@ const officeMessages = {
 const dmMessages = {
   btn_repair_dm: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. :blush:',
   btn_attendance_dm: '*근태 문의* \n근태 관련 내용은 여기서 확인하세요!',
-  btn_vacation_dm: '*연차 문의* \n연차 관련 내용은 여기서 확인하세요!',
-  btn_oa: '*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
-  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n※ 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)\n (cc. <@U08L6553LEL>)',
+  btn_vacation_dm: '*연차 문의* \n연차 관련 내용는 여기서 확인하세요!',
+  btn_oa: '*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush:',
+  btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n※ 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. :blush:\n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
 };
 
@@ -177,7 +177,7 @@ app.event('message', async ({ event, client }) => {
 });
 
 // --- 오피스 채널용 버튼 클릭 이벤트 처리 ---
-app.action(/btn_.+_office|btn_(repair|drive|ms_office|adobe|sandoll|other_license|docs|other_office)/, async ({ ack, body, client, action }) => {
+app.action(/^(btn_.+_office|btn_(repair|drive|ms_office|adobe|sandoll|other_license|docs|other_office))$/, async ({ ack, body, client, action }) => {
   await ack();
   const channel = body.channel.id;
   const actionId = action.action_id;
@@ -186,7 +186,6 @@ app.action(/btn_.+_office|btn_(repair|drive|ms_office|adobe|sandoll|other_licens
     // 근태/연차 문의 - 기본 텍스트 + 담당자 호출 버튼 추가
     const baseText = officeMessages[actionId];
     try {
-      // 기본 안내 메시지 보내기 (스레드 또는 일반)
       await client.chat.postMessage({
         channel,
         thread_ts: body.message.ts,
@@ -203,7 +202,7 @@ app.action(/btn_.+_office|btn_(repair|drive|ms_office|adobe|sandoll|other_licens
       console.error('Error sending attendance/vacation office message:', e);
     }
   } else {
-    // 일반 버튼 클릭 시 단순 텍스트 안내 (스레드 또는 일반)
+    // 일반 버튼 클릭 시 단순 텍스트 안내
     const text = officeMessages[actionId] || '알 수 없는 요청입니다.';
     try {
       await client.chat.postMessage({
@@ -218,7 +217,7 @@ app.action(/btn_.+_office|btn_(repair|drive|ms_office|adobe|sandoll|other_licens
 });
 
 // --- 오피스 채널 담당자 호출 버튼 클릭 처리 ---
-app.action(/btn_call_(attendance|vacation)/, async ({ ack, body, client, action }) => {
+app.action(/^(btn_call_(attendance|vacation))$/, async ({ ack, body, client, action }) => {
   await ack();
   const channel = body.channel.id;
   const actionId = action.action_id;
@@ -236,7 +235,7 @@ app.action(/btn_call_(attendance|vacation)/, async ({ ack, body, client, action 
 });
 
 // --- DM용 버튼 클릭 이벤트 처리 ---
-app.action(/btn_.+_dm|btn_(oa|printer|desk)/, async ({ ack, body, client, action }) => {
+app.action(/^(btn_.+_dm|btn_(oa|printer|desk))$/, async ({ ack, body, client, action }) => {
   await ack();
   const channel = body.channel.id;
   const actionId = action.action_id;
