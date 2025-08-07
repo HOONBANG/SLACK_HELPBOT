@@ -253,7 +253,7 @@ app.action(/btn_.+_dm|btn_(oa|printer|desk)/, async ({ ack, body, client, action
 });
 
 // 헬스체크용 기본 GET 라우터
-receiver.router.get('/', (req, res) => {
+receiver.app.get('/', (req, res) => {
   res.send('Slack HelpBot is running ✅');
 });
 
