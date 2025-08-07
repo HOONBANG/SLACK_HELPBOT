@@ -117,7 +117,7 @@ const dmMessages = {
   btn_repair_dm: '*[:computer:장비 수리]* \n*※장비 수리 가이드 작성 예정※*',
   btn_attendance_dm: '*[:clock10:근태 문의]* \n바이트랩은 9시-10시 사이에 자유롭게 출퇴근 시간을 선택하고 8시간 근무하는 "시차 출퇴근제"를 통해 유연 근무를 하고 있어요. 사무실 입구의 출입 인식기를 통해 flex에 출퇴근 시간을 기록하니 출근, 퇴근 시에 잊지 말고 꼭 기록을 남겨주세요! 👶🏼행복한 육아 생활이 되길 바라며 자녀 육아하시는 멤버시라면 08시 30분-10시 30분까지 확대된 유연 근무가 적용돼요! 🏃🏼외근을 나가시고 현장에서 퇴근하신다면, 외근 나가실 때 출입 인식기에서 퇴근을 태그해주시고 flex에서 외근을 등록해주세요! 잠깐 외근 가셨다 돌아오는 일정이라면 외근 신청만 올려주시면 됩니다.', 
   btn_vacation_dm: '*[:palm_tree:연차 문의]* \n연차는 1주일 전 미리 플렉스를 통해 등록해주시고 팀원들에게 미리 공유해주세요! \n연차는 사유를 묻지 않으나, 부득이한 당일 연차라면 반드시 사유를 남기신 뒤에 워크플로우를 상신해주시면 됩니다.:smile: \n자세한 연차 제도 안내는 아래 노션 팀 생활 엿보기 페이지에서 볼 수 있어요! \n<https://www.notion.so/12934579dc0180c89fd4ee682628098b#12934579dc0180a787bddb3d2090f1b4|바이트랩 팀 생활 엿보기>',
-  btn_oa: '*[:toolbox:OA존 물품]* \n사무실 OA존에는 스테이플러, 포스트잇, 투명 파일 등 업무에 필요한 사무용품들이 보관되어 있어요! \n\n업무에 필수적이지만 OA존에 없는 사무용품이 있을 경우 <https://flex.team/workflow/archive/my?tab=in-progress&workflow-action=create&workflow-template-key=fd1367a24e2743e3ad18e5f112cd50de|비품 신청 워크플로우>를 작성해주시면 됩니다. :blush:',
+  btn_oa: '*[:toolbox:OA존 물품]* \n사무실 OA존에는 스테이플러, 포스트잇, 투명 파일 등 업무에 필요한 사무용품들이 보관되어 있어요! \n\n업무에 필수적이지만 OA존에 없는 사무용품이 있을 경우 *<https://flex.team/workflow/archive/my?tab=in-progress&workflow-action=create&workflow-template-key=fd1367a24e2743e3ad18e5f112cd50de|비품 신청 워크플로우>*를 작성해주시면 됩니다. :blush:',
   btn_printer: '*[:printer:복합기 연결]* \n복합기 연결이 어려우신 경우:\n1. 복합기 상단 QR코드 스캔\n2. 제이에이솔루션 1566-3505 로 전화 (바이트랩 직원임을 말씀해 주세요)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. \n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
 };
