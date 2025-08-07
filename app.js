@@ -103,12 +103,12 @@ const getBlocksDM = () => ([
 const officeMessages = {
   btn_repair: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. <@U08L6553LEL>) \n• 시점: \n• 증상:',
   btn_drive: '*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? (cc. <@U08L6553LEL>) \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유:',
-  btn_ms_office: '*[MS OFFICE]* \n업무 상 MS OFFICE가 필요하신 경우가 있는지 말씀 부탁드립니다. (cc. <@U08L6553LEL>) \n\n※ 구글 워크스페이스 내 스프레드시트를 활용하고 있어 MS office를 전사 단위로 구매하고 있지 않습니다.',
+  btn_ms_office: '*[MS OFFICE]* *바이트랩은 빠른 협업을 위해 공유가 원활한 구글 워크스페이스를 기본 문서 작성툴로 활용하고 있어요!* \n업무 상 불가피한 경우(ex. 비밀번호가 걸린 엑셀 파일)가 아니라면 구글 워크스페이스를 활용해 업무를 처리해주세요. 구글 드라이브에 파일을 업로드하면 엑셀, 워드, PPT 또한 편집이 가능합니다. \n불가피한 경우에 해당한다면 <#C04NUTT5771|chat_office>채널에 이용 사유와 함께 요청해주세요. \n(cc. <@U08L6553LEL>)',
   btn_adobe: '*[ADOBE]* \n어떤 프로그램이 필요하신가요? (cc. <@U08L6553LEL>) \n\n• Photoshop \n• Premiere Pro \n• Illustrator \n• 기타',
   btn_sandoll: '*[산돌구름]* \n회사 구글 계정으로 산돌구름 회원가입(개인) 후 말씀 부탁드립니다. :blush: \n (cc. <@U08L6553LEL>)',
   btn_other_license: '*[기타 라이선스]* \n필요하신 라이선스 제품과 요청 사유를 말씀 부탁드립니다. :blush: \n (cc. <@U08L6553LEL>)',
-  btn_attendance_office: '*근태 문의* \n근태 관련 내용은 여기서 확인하세요!',
-  btn_vacation_office: '*연차 문의* \n연차 관련 내용은 여기서 확인하세요!',
+  btn_attendance_office: '*[:clock10:근태 문의]* \n근태 관련 내용은 여기서 확인하세요!',
+  btn_vacation_office: '*[:palm_tree:연차 문의]* \n연차 관련 내용은 여기서 확인하세요!',
   btn_docs: '*[:pencil:서류 발급 요청]* \n어떤 서류 발급이 필요하신가요? :blush: \n (cc. <!subteam^S07DF7YSKB4>)',
   btn_other_office: '*[기타 요청]* \n어떤 도움이 필요하신가요? :blush: \n (cc. <@U08L6553LEL>)',
 };
@@ -116,8 +116,8 @@ const officeMessages = {
 // --- DM용 버튼 액션 메시지 ---
 const dmMessages = {
   btn_repair_dm: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. :blush:',
-  btn_attendance_dm: '*근태 문의* \n근태 관련 내용은 여기서 확인하세요!',
-  btn_vacation_dm: '*연차 문의* \n연차 관련 내용는 여기서 확인하세요!',
+  btn_attendance_dm: '*[:clock10:근태 문의]* \n근태 관련 내용은 여기서 확인하세요!',
+  btn_vacation_dm: '*[:palm_tree:연차 문의]* \n연차 관련 내용는 여기서 확인하세요!',
   btn_oa: '*[:toolbox:OA존 물품]* \nOA존 물품 관련 어떤 도움이 필요하신가요? :blush:',
   btn_printer: '*[:printer:복합기 연결]* \n복합기 연결 및 사용에 어려움이 있으신 경우,\n아래 두 가지 방법을 통해 지원을 받으실 수 있습니다. :blush:\n\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체 연락 - 제이에이솔루션 1566-3505\n※ 바이트랩 직원이라고 말씀하시면, 원격지원으로 조치해주십니다. (10분 이내)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 자리배치도에서 확인 가능합니다. :blush:\n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
