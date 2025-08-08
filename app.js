@@ -238,12 +238,13 @@ app.action(/^(btn_call_(attendance|vacation))$/, async ({ ack, body, client, act
 app.action(/^(btn_.+_dm|btn_(oa|printer|desk))$/, async ({ ack, body, client, action }) => {
   await ack();
   const threadTs = body.message.ts;
+  const channelId = body.channel.id;
   const actionId = action.action_id;
 
   const text = dmMessages[actionId] || '요청하신 항목을 처리 중입니다.';
   try {
     await client.chat.postMessage({
-      channel,
+      channel: channelId,
       thread_ts: threadTs, // 스레드로 메시지 전송
       text,
     });
