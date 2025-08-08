@@ -237,13 +237,14 @@ app.action(/^(btn_call_(attendance|vacation))$/, async ({ ack, body, client, act
 // --- DM용 버튼 클릭 이벤트 처리 ---
 app.action(/^(btn_.+_dm|btn_(oa|printer|desk))$/, async ({ ack, body, client, action }) => {
   await ack();
-  const channel = body.channel.id;
+  const threadTs = body.message.ts;
   const actionId = action.action_id;
 
-  const text = dmMessages[actionId] || '알 수 없는 요청입니다.';
+  const text = dmMessages[actionId] || '요청하신 항목을 처리 중입니다.';
   try {
     await client.chat.postMessage({
       channel,
+      thread_ts: threadTs, // 스레드로 메시지 전송
       text,
     });
   } catch (e) {
