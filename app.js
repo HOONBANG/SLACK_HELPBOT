@@ -279,7 +279,7 @@ app.message(async ({ message, client }) => {
                         type: 'button',
                         text: {
                           type: 'plain_text',
-                          text: '담당자 호출',
+                          text: ':bellhop_bell:담당자 호출',
                         },
                         action_id: 'btn_call_manager',
                       },
