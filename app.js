@@ -115,15 +115,15 @@ const callManagerButtons = new Set([
   'btn_other_office',
 ]);
 
-// --- DM에서 메시지 오면 버튼 블록 전송 ---
-// 상태가 'none'일 때만 버튼 블록 보냄. 스레드 상호작용 중엔 보내지 않음
+// --- DM에서 메시지 오면 (단, @헬프봇 멘션 포함 시에만) 버튼 블록 전송 ---
 app.event('message', async ({ event, client }) => {
   try {
     if (event.channel_type === 'im' && !event.bot_id) {
       const userId = event.user;
+      const text = event.text?.trim() || '';
 
-      // 대화 상태 없거나 'none' 상태일 때만 버튼 블록 전송
-      if (!userState[userId] || userState[userId].step === 'none') {
+      // '@헬프봇' 텍스트 포함 시에만 버튼 블록 전송
+      if (text.includes('@헬프봇')) {
         userState[userId] = { step: 'none' }; // 상태 초기화
 
         await client.chat.postMessage({
@@ -132,7 +132,7 @@ app.event('message', async ({ event, client }) => {
           blocks: Blocks(),
         });
       }
-      // 'waiting_detail' 등 상태면 버튼 블록 안 보냄
+      // '@헬프봇' 없으면 무반응
     }
   } catch (error) {
     console.error('Error handling DM message event:', error);
@@ -185,14 +185,14 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   // '다시 작성' 버튼 처리
   if (actionId === 'btn_rewrite') {
     try {
-      // 기존 lastActionId 유지 (없으면 빈 문자열)
+      // lastActionId 유지해서 담당자 호출 버튼이 계속 보이게 함
       const lastActionId = userState[userId]?.lastActionId || '';
 
       userState[userId] = {
         step: 'waiting_detail',
         requestText: '',
         threadTs,
-        lastActionId,  // 중요: 담당자 호출 버튼 유지 위해 반드시 저장
+        lastActionId,
       };
 
       await client.chat.postMessage({
@@ -221,7 +221,7 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       text: baseText,
     });
 
-    // 요청 상세 입력 유도 메시지 상태 설정
+    // 요청 상세 입력 유도 메시지 (단, '어떤 도움이 필요하신가요?' 문구는 제외했습니다)
     if (actionId === 'btn_repair') {
       userState[userId] = {
         step: 'waiting_detail',
@@ -242,19 +242,25 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   }
 });
 
-// 사용자가 요청 상세 입력 시 처리 (스레드에 답장하는 경우)
+// 사용자가 요청 상세 입력 시 처리 (DM 내 스레드에 답장)
 app.message(async ({ message, client }) => {
   try {
-    // DM 채널이고 봇 메시지 아님 + 대화 상태가 'waiting_detail'일 때만 처리
-    if (message.channel_type === 'im' && !message.bot_id) {
+    if (
+      message.channel_type === 'im' &&
+      !message.bot_id
+    ) {
       const userId = message.user;
       const text = message.text?.trim();
 
-      if (userState[userId] && userState[userId].step === 'waiting_detail') {
+      // 상태가 waiting_detail 일 때만 처리
+      if (
+        userState[userId] &&
+        userState[userId].step === 'waiting_detail'
+      ) {
         userState[userId].requestText = text;
         userState[userId].step = 'confirm_request';
 
-        // thread_ts 지정하여 스레드에 답장 형태로 메시지 전송
+        // 스레드에 답장 (thread_ts 반드시 있어야 스레드 메시지 됨)
         await client.chat.postMessage({
           channel: message.channel,
           thread_ts: userState[userId].threadTs,
@@ -270,19 +276,25 @@ app.message(async ({ message, client }) => {
             {
               type: 'actions',
               elements: [
-                // 담당자 호출 버튼은 lastActionId가 호출 버튼 목록에 있을 때만 노출
+                // 담당자 호출 버튼은 마지막 액션이 호출 버튼 목록에 있을 때만 보여줌
                 ...(callManagerButtons.has(userState[userId].lastActionId)
                   ? [
                       {
                         type: 'button',
-                        text: { type: 'plain_text', text: '담당자 호출' },
+                        text: {
+                          type: 'plain_text',
+                          text: '담당자 호출',
+                        },
                         action_id: 'btn_call_manager',
                       },
                     ]
                   : []),
                 {
                   type: 'button',
-                  text: { type: 'plain_text', text: '다시 작성' },
+                  text: {
+                    type: 'plain_text',
+                    text: '다시 작성',
+                  },
                   action_id: 'btn_rewrite',
                 },
               ],
