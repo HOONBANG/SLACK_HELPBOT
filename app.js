@@ -119,20 +119,16 @@ const callManagerButtons = new Set([
 app.event('message', async ({ event, client }) => {
   try {
     if (event.channel_type === 'im' && !event.bot_id) {
-      const userId = event.user;
-      const text = event.text?.trim() || '';
-
-      // '@헬프봇' 텍스트 포함 시에만 버튼 블록 전송
-      if (text.includes('@헬프봇')) {
-        userState[userId] = { step: 'none' }; // 상태 초기화
-
+      const botUserId = (await client.auth.test()).user_id;
+      if (event.text && event.text.includes(`<@${botUserId}>`)) {
+        // 멘션이 맞으니 버튼 블록 전송
         await client.chat.postMessage({
           channel: event.channel,
           text: '무엇을 도와드릴까요? :blush:',
           blocks: Blocks(),
         });
+        userState[event.user] = { step: 'none' };
       }
-      // '@헬프봇' 없으면 무반응
     }
   } catch (error) {
     console.error('Error handling DM message event:', error);
