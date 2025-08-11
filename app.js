@@ -259,24 +259,20 @@ app.action('btn_call_manager', async ({ body, ack, client }) => {
   }
 
   try {
+    // 공개 채널에 요청 메시지 전송
     await client.chat.postMessage({
       channel: channelId,
       text: `<@${managerId}> 확인 부탁드립니다.\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
     });
 
+    // DM 스레드에 완료 메시지 전송
     await client.chat.postMessage({
       channel: channelIdDM,
       thread_ts: threadTs,
       text: '담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.',
     });
 
-    delete userState[userId];
-  } catch (error) {
-    console.error('Error in btn_call_manager:', error);
-  }
-});
-
-    // 상태 삭제(초기화)
+    // 상태 초기화
     delete userState[userId];
   } catch (error) {
     console.error('Error in btn_call_manager:', error);
