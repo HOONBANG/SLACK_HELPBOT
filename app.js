@@ -185,14 +185,14 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   // '다시 작성' 버튼 처리
   if (actionId === 'btn_rewrite') {
     try {
-      // lastActionId 유지해서 담당자 호출 버튼이 계속 보이게 함
+      // 기존 lastActionId 유지 (없으면 빈 문자열)
       const lastActionId = userState[userId]?.lastActionId || '';
 
       userState[userId] = {
         step: 'waiting_detail',
         requestText: '',
         threadTs,
-        lastActionId: userState[userId]?.lastActionId || ''
+        lastActionId,  // 중요: 담당자 호출 버튼 유지 위해 반드시 저장
       };
 
       await client.chat.postMessage({
@@ -221,7 +221,7 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       text: baseText,
     });
 
-    // 요청 상세 입력 유도 메시지
+    // 요청 상세 입력 유도 메시지 상태 설정
     if (actionId === 'btn_repair') {
       userState[userId] = {
         step: 'waiting_detail',
@@ -242,24 +242,19 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   }
 });
 
-// 사용자가 요청 상세 입력 시 처리
+// 사용자가 요청 상세 입력 시 처리 (스레드에 답장하는 경우)
 app.message(async ({ message, client }) => {
   try {
-    if (
-      message.channel_type === 'im' &&
-      !message.bot_id
-    ) {
+    // DM 채널이고 봇 메시지 아님 + 대화 상태가 'waiting_detail'일 때만 처리
+    if (message.channel_type === 'im' && !message.bot_id) {
       const userId = message.user;
       const text = message.text?.trim();
 
-      if (
-        userState[userId] &&
-        userState[userId].step === 'waiting_detail'
-      ) {
+      if (userState[userId] && userState[userId].step === 'waiting_detail') {
         userState[userId].requestText = text;
         userState[userId].step = 'confirm_request';
 
-        // 여기서 반드시 thread_ts 넣어야 스레드에 답장으로 올라감
+        // thread_ts 지정하여 스레드에 답장 형태로 메시지 전송
         await client.chat.postMessage({
           channel: message.channel,
           thread_ts: userState[userId].threadTs,
@@ -275,25 +270,19 @@ app.message(async ({ message, client }) => {
             {
               type: 'actions',
               elements: [
-                // 담당자 호출 버튼은 마지막 액션이 호출 버튼 목록에 있을 때만 보여줌
+                // 담당자 호출 버튼은 lastActionId가 호출 버튼 목록에 있을 때만 노출
                 ...(callManagerButtons.has(userState[userId].lastActionId)
                   ? [
                       {
                         type: 'button',
-                        text: {
-                          type: 'plain_text',
-                          text: '담당자 호출',
-                        },
+                        text: { type: 'plain_text', text: '담당자 호출' },
                         action_id: 'btn_call_manager',
                       },
                     ]
                   : []),
                 {
                   type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: '다시 작성',
-                  },
+                  text: { type: 'plain_text', text: '다시 작성' },
                   action_id: 'btn_rewrite',
                 },
               ],
