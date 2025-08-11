@@ -10,6 +10,10 @@ const receiver = new ExpressReceiver({
   },
 });
 
+// 환경변수에서 채널ID, 담당자ID 읽기
+const channelId = process.env.C096E2QQN49 || 'C096E2QQN49'; // 테스트 채널ID 기본값
+const managerId = process.env.U08L6553LEL || 'U08L6553LEL';  // 담당자 유저ID 기본값
+
 // Slack App 초기화
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -18,6 +22,9 @@ const app = new App({
   socketMode: false,
   port: process.env.PORT || 10000,
 });
+
+// 대화 상태 저장소 (간단 버전: 메모리 저장)
+let userState = {}; // {userId: { step: '', requestText: '' } }
 
 // --- 통합된 DM 전용 버튼 블록 ---
 const Blocks = () => ([
@@ -77,6 +84,12 @@ const Blocks = () => ([
       { type: 'button', text: { type: 'plain_text', text: '기타 요청' }, action_id: 'btn_other_office' },
     ],
   },
+  {
+    type: 'actions',
+    elements: [
+      { type: 'button', text: { type: 'plain_text', text: '📢 담당자 호출' }, action_id: 'btn_call_manager' },
+    ],
+  },
 ]);
 
 // --- 버튼 메시지 응답 정의 ---
@@ -112,22 +125,88 @@ app.event('message', async ({ event, client }) => {
 });
 
 // --- 버튼 클릭 시 메시지 전송 (DM 전용) ---
-app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
+app.action(/^(btn_.*)$/, async ({ ack, body, client, action, say }) => {
   await ack();
-  const channelId = body.channel.id;
+
+  const channelIdDM = body.channel.id;
   const threadTs = body.message.ts;
   const actionId = action.action_id;
+  const userId = body.user.id;
 
-  const text = Messages[actionId] || '요청하신 항목을 처리 중입니다.';
   try {
-    await client.chat.postMessage({
-      channel: channelId,
-      thread_ts: threadTs,
-      text,
-    });
+    if (actionId === 'btn_call_manager') {
+      // 담당자 호출 버튼 클릭 시
+      const requestText = userState[userId]?.requestText || '';
+
+      if (!requestText) {
+        await say("요청 내용이 없습니다. 다시 시도해주세요.");
+        return;
+      }
+
+      await client.chat.postMessage({
+        channel: channelId,
+        text: `<@${managerId}> 확인 부탁드립니다.\n*요청자:* <@${userId}>\n*내용:* ${requestText}`
+      });
+
+      await say("담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.");
+
+      delete userState[userId];
+    } else {
+      // 일반 버튼 클릭 시
+      const text = Messages[actionId];
+      await client.chat.postMessage({
+        channel: channelIdDM,
+        thread_ts: threadTs,
+        text,
+      });
+
+      if (actionId === 'btn_repair') {
+        userState[userId] = { step: 'waiting_detail', requestText: '' };
+        await say("어떤 도움이 필요하신지 말씀해주세요.");
+      } else {
+        userState[userId] = { step: 'waiting_detail', requestText: `[${action.text.text}] 요청` };
+        await say(`요청 내용을 구체적으로 입력해주세요.`);
+      }
+    }
   } catch (e) {
-    console.error('Error sending DM message:', e);
+    console.error('Error handling button action:', e);
   }
+});
+
+// 사용자가 DM으로 요청 내용 입력 시 처리
+app.message(async ({ message, say }) => {
+  if (message.channel_type === 'im' && !message.bot_id) {
+    const userId = message.user;
+    const text = message.text?.trim();
+
+    if (userState[userId] && userState[userId].step === 'waiting_detail') {
+      // 요청 내용 저장
+      userState[userId].requestText = text;
+      userState[userId].step = 'confirm_request';
+
+      await say({
+        text: "이런 내용의 도움이 필요하신가요?",
+        blocks: [
+          { type: "section", text: { type: "mrkdwn", text: `이런 내용의 도움이 필요하신가요?\n>${text}` } },
+          {
+            type: "actions",
+            elements: [
+              { type: "button", text: { type: "plain_text", text: "담당자 호출" }, action_id: "btn_call_manager" },
+              { type: "button", text: { type: "plain_text", text: "다시 작성" }, action_id: "btn_rewrite" }
+            ]
+          }
+        ]
+      });
+    }
+  }
+});
+
+// 다시 작성 버튼 처리
+app.action('btn_rewrite', async ({ body, ack, say }) => {
+  await ack();
+  const userId = body.user.id;
+  userState[userId] = { step: 'waiting_detail', requestText: '' };
+  await say("다시 요청 내용을 입력해주세요.");
 });
 
 // --- 헬스체크 라우터 ---
