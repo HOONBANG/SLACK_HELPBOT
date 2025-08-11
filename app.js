@@ -10,10 +10,6 @@ const receiver = new ExpressReceiver({
   },
 });
 
-// 환경변수
-const channelId = process.env.C096E2QQN49; // 공개 채널 ID
-const managerId = process.env.U08L6553LEL; // 담당자 유저 ID
-
 // Slack App 초기화
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -22,6 +18,10 @@ const app = new App({
   socketMode: false,
   port: process.env.PORT || 10000,
 });
+
+// 관리자 호출용 공개 채널 및 담당자 ID
+const channelId = 'C096E2QQN49';    // 테스트용 공개 채널
+const managerId = 'U08L6553LEL';    // 담당자 유저 ID
 
 // 대화 상태 저장소 (메모리 기반)
 let userState = {}; // { userId: { step, requestText, threadTs } }
@@ -116,15 +116,23 @@ const callManagerButtons = new Set([
 ]);
 
 // --- DM에서 메시지 오면 버튼 블록 전송 ---
+// 상태가 'none'일 때만 버튼 블록 보냄. 스레드 상호작용 중엔 보내지 않음
 app.event('message', async ({ event, client }) => {
   try {
     if (event.channel_type === 'im' && !event.bot_id) {
-      // 사용자가 새 DM 메시지 보냈을 때 처음 버튼 제공
-      await client.chat.postMessage({
-        channel: event.channel,
-        text: '무엇을 도와드릴까요? :blush:',
-        blocks: Blocks(),
-      });
+      const userId = event.user;
+
+      // 대화 상태 없거나 'none' 상태일 때만 버튼 블록 전송
+      if (!userState[userId] || userState[userId].step === 'none') {
+        userState[userId] = { step: 'none' }; // 상태 초기화
+
+        await client.chat.postMessage({
+          channel: event.channel,
+          text: '무엇을 도와드릴까요? :blush:',
+          blocks: Blocks(),
+        });
+      }
+      // 'waiting_detail' 등 상태면 버튼 블록 안 보냄
     }
   } catch (error) {
     console.error('Error handling DM message event:', error);
@@ -157,9 +165,8 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       threadTs,
     };
 
-    // 담당자 호출 버튼이 필요한 경우만 추가 안내 없이 대기 상태 유지
+    // 담당자 호출 버튼이 없는 경우 상태 바로 'none'으로
     if (!callManagerButtons.has(actionId)) {
-      // 담당자 호출 버튼 없는 버튼은 상태만 리셋하고 추가 안내 없음
       userState[userId].step = 'none';
     }
   } catch (error) {
@@ -265,6 +272,7 @@ app.action('btn_call_manager', async ({ body, ack, client }) => {
       text: '담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.',
     });
 
+    // 상태 삭제(초기화)
     delete userState[userId];
   } catch (error) {
     console.error('Error in btn_call_manager:', error);
