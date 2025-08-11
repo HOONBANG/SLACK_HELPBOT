@@ -192,7 +192,7 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
         step: 'waiting_detail',
         requestText: '',
         threadTs,
-        lastActionId,
+        lastActionId: userState[userId]?.lastActionId || ''
       };
 
       await client.chat.postMessage({
@@ -229,11 +229,6 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
         threadTs,
         lastActionId: actionId,
       };
-      await client.chat.postMessage({
-        channel: channelIdDM,
-        thread_ts: threadTs,
-        text: "어떤 도움이 필요하신지 말씀해주세요.",
-      });
     } else {
       userState[userId] = {
         step: 'waiting_detail',
@@ -241,11 +236,6 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
         threadTs,
         lastActionId: actionId,
       };
-      await client.chat.postMessage({
-        channel: channelIdDM,
-        thread_ts: threadTs,
-        text: "요청 내용을 구체적으로 입력해주세요.",
-      });
     }
   } catch (error) {
     console.error('Error handling button action:', error);
