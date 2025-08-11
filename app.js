@@ -278,9 +278,10 @@ app.message(async ({ message, client }) => {
                       {
                         type: 'button',
                         text: {
-                          type: 'primary',
+                          type: 'plain_text',
                           text: ':bellhop_bell:담당자 호출',
                         },
+                        style: 'primary'
                         action_id: 'btn_call_manager',
                       },
                     ]
