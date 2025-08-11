@@ -86,7 +86,7 @@ const Blocks = () => ([
   },
 ]);
 
-// 버튼별 기본 메시지
+// 버튼별 기본 메시지 (원본 내용 유지)
 const Messages = {
   btn_repair: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. (cc. <@U08L6553LEL>) \n• 시점: \n• 증상:',
   btn_drive: '*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? (cc. <@U08L6553LEL>) \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유:',
@@ -116,12 +116,16 @@ const callManagerButtons = new Set([
 ]);
 
 // --- DM에서 메시지 오면 (단, @헬프봇 멘션 포함 시에만) 버튼 블록 전송 ---
+// 주의: 멘션은 DM의 "top-level" 메시지에서만 처리되도록 (thread reply로 멘션해도 블록 안 보냄)
 app.event('message', async ({ event, client }) => {
   try {
-    if (event.channel_type === 'im' && !event.bot_id) {
-      const botUserId = (await client.auth.test()).user_id;
+    if (event.channel_type === 'im' && !event.bot_id && !event.thread_ts) {
+      // 현재 봇의 user id를 가져와서 멘션인지 확인
+      const botUser = await client.auth.test();
+      const botUserId = botUser.user_id;
+
       if (event.text && event.text.includes(`<@${botUserId}>`)) {
-        // 멘션이 맞으니 버튼 블록 전송
+        // 멘션이 맞으니 버튼 블록 전송 (text 포함)
         await client.chat.postMessage({
           channel: event.channel,
           text: '무엇을 도와드릴까요? :blush:',
@@ -136,12 +140,14 @@ app.event('message', async ({ event, client }) => {
 });
 
 // --- 버튼 클릭 시 메시지 전송 (DM 전용) ---
+// action handler는 모든 btn_* 을 여기서 처리 (btn_call_manager, btn_rewrite 포함)
 app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
+  // ack는 딱 한 번만 호출
   await ack();
 
   const userId = body.user.id;
   const channelIdDM = body.channel.id;
-  const threadTs = body.message.ts; // 클릭된 메시지 ts
+  const threadTs = body.message.ts; // 클릭된 메시지 (블록이 포함된 메시지)의 ts
   const actionId = action.action_id;
 
   // '담당자 호출' 버튼 처리
@@ -158,12 +164,13 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
         return;
       }
 
-      // 공개 채널에 메시지 전송
+      // 공개 채널에 메시지 전송 (text 포함)
       await client.chat.postMessage({
         channel: channelId,
         text: `<@${managerId}> 확인 부탁드립니다.\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
       });
 
+      // DM 스레드에 완료 알림
       await client.chat.postMessage({
         channel: channelIdDM,
         thread_ts: threadTs,
@@ -210,15 +217,16 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   }
 
   try {
-    // 기본 메시지 스레드에 보냄
+    // 기본 메시지 스레드에 보냄 (text 포함)
     await client.chat.postMessage({
       channel: channelIdDM,
       thread_ts: threadTs,
       text: baseText,
     });
 
-    // 요청 상세 입력 유도 메시지 (단, '어떤 도움이 필요하신가요?' 문구는 제외했습니다)
-    if (actionId === 'btn_repair') {
+    // 요청 상세 입력 유도 상태 설정
+    // --> **담당자 호출이 필요한 버튼들만** waiting_detail로 대기 (스레드에서 작성된 내용을 취급)
+    if (callManagerButtons.has(actionId)) {
       userState[userId] = {
         step: 'waiting_detail',
         requestText: '',
@@ -226,9 +234,10 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
         lastActionId: actionId,
       };
     } else {
+      // 단순 안내형 버튼: 더 이상의 입력을 받지 않음
       userState[userId] = {
-        step: 'waiting_detail',
-        requestText: `[${body.actions[0].text.text}] 요청`,
+        step: 'none',
+        requestText: '',
         threadTs,
         lastActionId: actionId,
       };
@@ -238,25 +247,28 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   }
 });
 
-// 사용자가 요청 상세 입력 시 처리 (DM 내 스레드에 답장)
+// 사용자가 요청 상세 입력 시 처리 (단, 반드시 **스레드(reply)** 에서 입력해야 처리됨)
 app.message(async ({ message, client }) => {
   try {
+    // only process user messages in DM thread replies
     if (
       message.channel_type === 'im' &&
-      !message.bot_id
+      !message.bot_id &&
+      message.thread_ts // must be a thread reply
     ) {
       const userId = message.user;
       const text = message.text?.trim();
 
-      // 상태가 waiting_detail 일 때만 처리
+      // 요청 입력 중인 상태인지 확인: 저장된 threadTs와 동일한 스레드여야 함
       if (
         userState[userId] &&
-        userState[userId].step === 'waiting_detail'
+        userState[userId].step === 'waiting_detail' &&
+        message.thread_ts === userState[userId].threadTs
       ) {
         userState[userId].requestText = text;
         userState[userId].step = 'confirm_request';
 
-        // 스레드에 답장 (thread_ts 반드시 있어야 스레드 메시지 됨)
+        // 스레드에 확인 메시지 발송 (text 포함)
         await client.chat.postMessage({
           channel: message.channel,
           thread_ts: userState[userId].threadTs,
