@@ -16,7 +16,6 @@ const app = new App({
   receiver,
   appToken: process.env.SLACK_APP_TOKEN,
   socketMode: false,
-  port: process.env.PORT || 10000,
 });
 
 // 관리자 호출용 공개 채널 및 담당자 ID
@@ -298,6 +297,7 @@ receiver.app.get('/', (req, res) => {
 });
 
 // 서버 시작
+const PORT = process.env.PORT || 10000;
 (async () => {
   await app.start(PORT);
   console.log('⚡ HelpBot is running on port', PORT);
