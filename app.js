@@ -252,49 +252,42 @@ app.message(async ({ message, client }) => {
       userSt.requestText = text;
       userSt.step = 'confirm_request';
 
-      await client.chat.postMessage({
-        channel: message.channel,
-        thread_ts: userSt.threadTs,
-        text: '이런 내용의 도움이 필요하신가요?',
-        blocks: [
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `이런 내용의 도움이 필요하신가요?\n>${text}`,
-            },
+await client.chat.postMessage({
+  channel: message.channel,
+  thread_ts: userState[userId].threadTs,
+  text: '이런 내용의 도움이 필요하신가요?',
+  blocks: [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `이런 내용의 도움이 필요하신가요?\n>${text}`,
+      },
+    },
+    {
+      type: 'actions',
+      elements: [
+        {
+          type: 'button',
+          text: {
+            type: 'plain_text',
+            text: ':bellhop_bell:담당자 호출',
           },
-          {
-            type: 'actions',
-            elements: [
-              ...(callManagerButtons.has(userSt.lastActionId)
-                ? [
-                    {
-                      type: 'button',
-                      text: {
-                        type: 'plain_text',
-                        text: ':bellhop_bell:담당자 호출',
-                      },
-                      style: 'primary',
-                      action_id: 'btn_call_manager',
-                    },
-                  ]
-                : []),
-              {
-                type: 'button',
-                text: {
-                  type: 'plain_text',
-                  text: '다시 작성',
-                },
-                action_id: 'btn_rewrite',
-              },
-            ],
+          style: 'primary',
+          action_id: 'btn_call_manager',
+        },
+        {
+          type: 'button',
+          text: {
+            type: 'plain_text',
+            text: '다시 작성',
           },
+          action_id: 'btn_rewrite',
+         },
         ],
-      });
-    }
-  }
-});
+       },
+      ],
+    });
 
 // 헬스체크 라우터
 receiver.app.get('/', (req, res) => {
