@@ -120,19 +120,18 @@ const callManagerButtons = new Set([
 app.event('message', async ({ event, client }) => {
   try {
     if (event.channel_type === 'im' && !event.bot_id && !event.thread_ts) {
+      // 현재 봇의 user id를 가져와서 멘션인지 확인
       const botUser = await client.auth.test();
       const botUserId = botUser.user_id;
 
       if (event.text && event.text.includes(`<@${botUserId}>`)) {
         // 멘션이 맞으니 버튼 블록 전송 (text 포함)
-        const res = await client.chat.postMessage({
+        await client.chat.postMessage({
           channel: event.channel,
           text: '무엇을 도와드릴까요? :blush:',
           blocks: Blocks(),
         });
-
-        // 멘션 메시지 ts를 스레드 ts로 저장
-        userState[event.user] = { step: 'none', threadTs: res.ts, lastActionId: '', requestText: '' };
+        userState[event.user] = { step: 'none' };
       }
     }
   } catch (error) {
@@ -141,163 +140,155 @@ app.event('message', async ({ event, client }) => {
 });
 
 // --- 버튼 클릭 시 메시지 전송 (DM 전용) ---
+// action handler는 모든 btn_* 을 여기서 처리 (btn_call_manager, btn_rewrite 포함)
 app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   await ack();
 
   const userId = body.user.id;
   const channelIdDM = body.channel.id;
-  const threadTs = userState[userId]?.threadTs;
+  const threadTs = body.message.ts;
   const actionId = action.action_id;
 
+  // '담당자 호출' 버튼 처리
   if (actionId === 'btn_call_manager') {
-    try {
-      const requestText = userState[userId]?.requestText || '';
+    const requestText = userState[userId]?.requestText || '';
 
-      if (!requestText) {
-        await client.chat.postMessage({
-          channel: channelIdDM,
-          thread_ts: threadTs,
-          text: "요청 내용이 없습니다. 다시 시도해주세요.",
-        });
-        return;
-      }
-
-      // 공개 채널에 메시지 전송 (text 포함)
-      await client.chat.postMessage({
-        channel: channelId,
-        text: `<@${managerId}> 확인 부탁드립니다.\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
-      });
-
-      // DM 스레드에 완료 알림
+    if (!requestText) {
       await client.chat.postMessage({
         channel: channelIdDM,
         thread_ts: threadTs,
-        text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.",
+        text: "요청 내용이 없습니다. 다시 시도해주세요.",
       });
-
-      // 상태 초기화
-      delete userState[userId];
-    } catch (error) {
-      console.error('Error in btn_call_manager:', error);
+      return;
     }
-    return;
-  }
 
-  if (actionId === 'btn_rewrite') {
-    try {
-      const lastActionId = userState[userId]?.lastActionId || '';
+    // 공개 채널에 메시지 전송 (text 포함)
+    await client.chat.postMessage({
+      channel: channelId,
+      text: `<@${managerId}> 확인 부탁드립니다.\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
+    });
 
-      userState[userId] = {
-        step: 'waiting_detail',
-        requestText: '',
-        threadTs,
-        lastActionId,
-      };
-
-      await client.chat.postMessage({
-        channel: channelIdDM,
-        thread_ts: threadTs,
-        text: "다시 요청 내용을 입력해주세요.",
-      });
-    } catch (error) {
-      console.error('Error in btn_rewrite:', error);
-    }
-    return;
-  }
-
-  const baseText = Messages[actionId];
-  if (!baseText) return;
-
-  try {
+    // DM 스레드에 완료 알림
     await client.chat.postMessage({
       channel: channelIdDM,
       thread_ts: threadTs,
-      text: baseText,
+      text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.",
     });
 
-    if (callManagerButtons.has(actionId)) {
-      userState[userId] = {
-        step: 'waiting_detail',
-        requestText: '',
-        threadTs,
-        lastActionId: actionId,
-      };
-    } else {
-      userState[userId] = {
-        step: 'none',
-        requestText: '',
-        threadTs,
-        lastActionId: actionId,
-      };
-    }
-  } catch (error) {
-    console.error('Error handling button action:', error);
+    // 상태 초기화
+    delete userState[userId];
+    return;
+  }
+
+  // '다시 작성' 버튼 처리
+  if (actionId === 'btn_rewrite') {
+    userState[userId] = {
+      step: 'waiting_detail',
+      requestText: '',
+      threadTs,
+      lastActionId: userState[userId]?.lastActionId || '',
+    };
+
+    await client.chat.postMessage({
+      channel: channelIdDM,
+      thread_ts: threadTs,
+      text: "다시 요청 내용을 입력해주세요.",
+    });
+    return;
+  }
+
+  // 13개 버튼 클릭 시 기본 메시지 전송 및 상태 설정
+  const baseText = Messages[actionId];
+  if (!baseText) {
+    // 정의되지 않은 actionId 무시
+    return;
+  }
+
+  // 기본 메시지 스레드에 보냄 (text 포함)
+  await client.chat.postMessage({
+    channel: channelIdDM,
+    thread_ts: threadTs,
+    text: baseText,
+  });
+
+  // 요청 상세 입력 유도 상태 설정
+  if (callManagerButtons.has(actionId)) {
+    userState[userId] = {
+      step: 'waiting_detail',
+      requestText: '',
+      threadTs,
+      lastActionId: actionId,
+    };
+  } else {
+    userState[userId] = {
+      step: 'none',
+      requestText: '',
+      threadTs,
+      lastActionId: actionId,
+    };
   }
 });
 
-// 사용자가 요청 상세 입력 시 처리 (스레드에서만 처리)
+// 사용자가 요청 상세 입력 시 처리 (단, 반드시 스레드(reply) 에서 입력해야 처리됨)
 app.message(async ({ message, client }) => {
-  try {
+  if (
+    message.channel_type === 'im' &&
+    !message.bot_id &&
+    message.thread_ts
+  ) {
+    const userId = message.user;
+    const text = message.text?.trim();
+
     if (
-      message.channel_type === 'im' &&
-      !message.bot_id &&
-      message.thread_ts
+      userState[userId] &&
+      userState[userId].step === 'waiting_detail' &&
+      message.thread_ts === userState[userId].threadTs
     ) {
-      const userId = message.user;
-      const text = message.text?.trim();
+      userState[userId].requestText = text;
+      userState[userId].step = 'confirm_request';
 
-      if (
-        userState[userId] &&
-        userState[userId].step === 'waiting_detail' &&
-        message.thread_ts === userState[userId].threadTs
-      ) {
-        userState[userId].requestText = text;
-        userState[userId].step = 'confirm_request';
-
-        await client.chat.postMessage({
-          channel: message.channel,
-          thread_ts: userState[userId].threadTs,
-          text: '이런 내용의 도움이 필요하신가요?',
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `이런 내용의 도움이 필요하신가요?\n>${text}`,
-              },
+      // 스레드에 확인 메시지 발송
+      await client.chat.postMessage({
+        channel: message.channel,
+        thread_ts: userState[userId].threadTs,
+        text: '이런 내용의 도움이 필요하신가요?',
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `이런 내용의 도움이 필요하신가요?\n>${text}`,
             },
-            {
-              type: 'actions',
-              elements: [
-                ...(callManagerButtons.has(userState[userId].lastActionId)
-                  ? [
-                      {
-                        type: 'button',
-                        text: {
-                          type: 'plain_text',
-                          text: ':bellhop_bell:담당자 호출',
-                        },
-                        style: 'primary',
-                        action_id: 'btn_call_manager',
+          },
+          {
+            type: 'actions',
+            elements: [
+              ...(callManagerButtons.has(userState[userId].lastActionId)
+                ? [
+                    {
+                      type: 'button',
+                      text: {
+                        type: 'plain_text',
+                        text: ':bellhop_bell:담당자 호출',
                       },
-                    ]
-                  : []),
-                {
-                  type: 'button',
-                  text: {
-                    type: 'plain_text',
-                    text: '다시 작성',
-                  },
-                  action_id: 'btn_rewrite',
+                      style: 'primary',
+                      action_id: 'btn_call_manager',
+                    },
+                  ]
+                : []),
+              {
+                type: 'button',
+                text: {
+                  type: 'plain_text',
+                  text: '다시 작성',
                 },
-              ],
-            },
-          ],
-        });
-      }
+                action_id: 'btn_rewrite',
+              },
+            ],
+          },
+        ],
+      });
     }
-  } catch (error) {
-    console.error('Error processing user message:', error);
   }
 });
 
@@ -308,7 +299,6 @@ receiver.app.get('/', (req, res) => {
 
 // 서버 시작
 (async () => {
-  const port = process.env.PORT || 10000;
-  await app.start(port);
-  console.log('⚡ HelpBot is running on port', port);
+  await app.start(PORT);
+  console.log('⚡ HelpBot is running on port', PORT);
 })();
