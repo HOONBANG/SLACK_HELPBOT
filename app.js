@@ -238,6 +238,7 @@ app.message(async ({ message, client }) => {
     const userId = message.user;
     const text = message.text?.trim();
 
+    // userState에 저장된 threadTs와 현재 메시지의 thread_ts가 일치하고, 대기 상태인지 확인
     if (
       userState[userId] &&
       userState[userId].step === 'waiting_detail' &&
@@ -246,7 +247,6 @@ app.message(async ({ message, client }) => {
       userState[userId].requestText = text;
       userState[userId].step = 'confirm_request';
 
-      // 스레드에 확인 메시지 발송
       await client.chat.postMessage({
         channel: message.channel,
         thread_ts: userState[userId].threadTs,
