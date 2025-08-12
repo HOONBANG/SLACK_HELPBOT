@@ -288,6 +288,9 @@ await client.chat.postMessage({
        },
       ],
     });
+   }
+  }
+});
 
 // 헬스체크 라우터
 receiver.app.get('/', (req, res) => {
