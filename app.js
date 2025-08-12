@@ -178,23 +178,26 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
     delete userState[userId];
     return;
   }
+  
+// '다시 작성' 버튼 처리
+if (actionId === 'btn_rewrite') {
+  // thread_ts가 없으면 메시지 ts 사용
+  const threadTs = body.message.thread_ts || body.message.ts;
 
-  // '다시 작성' 버튼 처리
-  if (actionId === 'btn_rewrite') {
-    userState[userId] = {
-      step: 'waiting_detail',
-      requestText: '',
-      threadTs,
-      lastActionId: userState[userId]?.lastActionId || '',
-    };
+  userState[userId] = {
+    step: 'waiting_detail',
+    requestText: '',
+    threadTs,  // 반드시 정확한 threadTs 저장
+    lastActionId: userState[userId]?.lastActionId || '',
+  };
 
-    await client.chat.postMessage({
-      channel: channelIdDM,
-      thread_ts: threadTs,
-      text: "다시 요청 내용을 입력해주세요.",
-    });
-    return;
-  }
+  await client.chat.postMessage({
+    channel: channelIdDM,
+    thread_ts: threadTs,
+    text: "다시 요청 내용을 입력해주세요.",
+  });
+  return;
+}
 
   // 13개 버튼 클릭 시 기본 메시지 전송 및 상태 설정
   const baseText = Messages[actionId];
@@ -232,24 +235,26 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
 app.message(async ({ message, client }) => {
   if (
     message.channel_type === 'im' &&
-    !message.bot_id &&
-    message.thread_ts
+    !message.bot_id
   ) {
     const userId = message.user;
     const text = message.text?.trim();
 
-    // userState에 저장된 threadTs와 현재 메시지의 thread_ts가 일치하고, 대기 상태인지 확인
-    if (
-      userState[userId] &&
-      userState[userId].step === 'waiting_detail' &&
-      message.thread_ts === userState[userId].threadTs
-    ) {
-      userState[userId].requestText = text;
-      userState[userId].step = 'confirm_request';
+    const userSt = userState[userId];
+
+    // 스레드 내 입력 또는 최상위 메시지 입력 둘 다 인식 가능하게
+    const isThreadMatched =
+      userSt?.threadTs
+      ? (message.thread_ts === userSt.threadTs || (!message.thread_ts && message.ts === userSt.threadTs))
+      : false;
+
+    if (userSt && userSt.step === 'waiting_detail' && isThreadMatched) {
+      userSt.requestText = text;
+      userSt.step = 'confirm_request';
 
       await client.chat.postMessage({
         channel: message.channel,
-        thread_ts: userState[userId].threadTs,
+        thread_ts: userSt.threadTs,
         text: '이런 내용의 도움이 필요하신가요?',
         blocks: [
           {
@@ -262,7 +267,7 @@ app.message(async ({ message, client }) => {
           {
             type: 'actions',
             elements: [
-              ...(callManagerButtons.has(userState[userId].lastActionId)
+              ...(callManagerButtons.has(userSt.lastActionId)
                 ? [
                     {
                       type: 'button',
