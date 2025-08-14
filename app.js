@@ -153,32 +153,41 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   const actionId = action.action_id;
   const state = userState[userId] || {};
 
-  // '담당자 호출' 버튼
   if (actionId === 'btn_call_manager') {
-    const requestText = state.requestText || '';
-    const actionText = state.lastActionText || '';
-    if (!requestText) {
-      await client.chat.postMessage({ channel: channelIdDM, thread_ts: threadTs, text: "요청 내용이 없습니다. 다시 시도해주세요." });
-      return;
-    }
-    // 1. 공개 채널에는 간단 알림
-  await client.chat.postMessage({
+  const state = userState[userId];
+  const requestText = state?.requestText || '';
+  const actionText = state?.lastActionText || '';
+
+  if (!requestText) {
+    await client.chat.postMessage({
+      channel: channelIdDM,
+      thread_ts: state.threadTs,
+      text: "요청 내용이 없습니다. 다시 시도해주세요.",
+    });
+    return;
+  }
+
+  // 1. 공개 채널 확인 요청 (최상위)
+  const result = await client.chat.postMessage({
     channel: channelId,
     text: `<@${managerId}> 확인 부탁드립니다.`,
   });
 
-    // 2. 같은 스레드에 제목 및 요청사항 기재
+  // 2. 같은 공개 채널 스레드에 제목 + 요청사항
   await client.chat.postMessage({
     channel: channelId,
-    thread_ts: result.ts, // 위 메시지 ts 사용
+    thread_ts: result.ts,
     text: `*[${actionText}]*\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
   });
 
-  // DM 스레드에 완료 안내
-  await client.chat.postMessage({ channel: channelIdDM, thread_ts: threadTs, text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요." });
+  // 3. DM 스레드에 완료 안내
+  await client.chat.postMessage({
+    channel: channelIdDM,
+    thread_ts: state.threadTs,
+    text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.",
+  });
 
   delete userState[userId];
-  return;
 }
 
   // '다시 작성' 버튼
