@@ -27,18 +27,18 @@ let userState = {}; // { userId: { step, requestText, threadTs, lastActionId, la
 
 // 버튼 ID -> 순수 제목 맵
 const actionIdToTitle = {
-  btn_repair: '장비 수리',
-  btn_drive: '드라이브 이동 요청',
+  btn_repair: ':computer:장비 수리',
+  btn_drive: ':drive_icon:드라이브 이동 요청',
   btn_ms_office: 'MS OFFICE',
   btn_adobe: 'ADOBE',
   btn_sandoll: '산돌구름',
   btn_other_license: '기타 라이선스',
-  btn_attendance: '근태 문의',
-  btn_vacation: '연차 문의',
-  btn_docs: '서류 발급 요청',
-  btn_oa: 'OA존 물품',
-  btn_printer: '복합기 연결',
-  btn_desk: '구성원 자리 확인',
+  btn_attendance: ':clock10:근태 문의',
+  btn_vacation: ':palm_tree:연차 문의',
+  btn_docs: ':pencil:서류 발급 요청',
+  btn_oa: ':toolbox:OA존 물품',
+  btn_printer: ':printer:복합기 연결',
+  btn_desk: ':busts_in_silhouette:구성원 자리 확인',
   btn_other_office: '기타 요청',
 };
 
@@ -161,17 +161,25 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       await client.chat.postMessage({ channel: channelIdDM, thread_ts: threadTs, text: "요청 내용이 없습니다. 다시 시도해주세요." });
       return;
     }
+    // 1. 공개 채널에는 간단 알림
+  await client.chat.postMessage({
+    channel: channelId,
+    text: `<@${managerId}> 확인 부탁드립니다.`,
+  });
 
-    await client.chat.postMessage({
-      channel: channelId,
-      text: `<@${managerId}> 확인 부탁드립니다.\n*[${actionText}]*\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
-    });
-    await client.chat.postMessage({ channel: channelIdDM, thread_ts: threadTs, text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요." });
+    // 2. 같은 스레드에 제목 및 요청사항 기재
+  await client.chat.postMessage({
+    channel: channelId,
+    thread_ts: result.ts, // 위 메시지 ts 사용
+    text: `*[${actionText}]*\n*요청자:* <@${userId}>\n*내용:* ${requestText}`,
+  });
 
-    delete userState[userId];
-    return;
-  }
+  // DM 스레드에 완료 안내
+  await client.chat.postMessage({ channel: channelIdDM, thread_ts: threadTs, text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요." });
 
+  delete userState[userId];
+  return;
+}
 
   // '다시 작성' 버튼
   if (actionId === 'btn_rewrite') {
