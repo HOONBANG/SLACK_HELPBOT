@@ -42,7 +42,7 @@ const Blocks = () => ([
     type: 'actions',
     elements: [
       { type: 'button', text: { type: 'plain_text', text: ':computer:장비 수리' }, action_id: 'btn_repair' },
-      { type: 'button', text: { type: 'plain_text', text: ':drive_icon:구글 드라이브' }, action_id: 'btn_drive' },
+      { type: 'button', text: { type: 'plain_text', text: ':drive_icon:드라이브 이동 요청' }, action_id: 'btn_drive' },
     ],
   },
   {
@@ -59,39 +59,6 @@ const Blocks = () => ([
     ],
   },
   {
-    type: 'section',
-    text: { type: 'mrkdwn', text: '*HR 관련 문의*' },
-  },
-  {
-    type: 'actions',
-    elements: [
-      { type: 'button', text: { type: 'plain_text', text: ':clock10:근태 문의' }, action_id: 'btn_attendance' },
-      { type: 'button', text: { type: 'plain_text', text: ':palm_tree:연차 문의' }, action_id: 'btn_vacation' },
-      { type: 'button', text: { type: 'plain_text', text: ':pencil:서류 발급 요청' }, action_id: 'btn_docs' },
-    ],
-  },
-  {
-    type: 'section',
-    text: { type: 'mrkdwn', text: '*오피스 관련 요청*' },
-  },
-  {
-    type: 'actions',
-    elements: [
-      { type: 'button', text: { type: 'plain_text', text: ':toolbox:OA존 물품' }, action_id: 'btn_oa' },
-      { type: 'button', text: { type: 'plain_text', text: ':printer:복합기 연결' }, action_id: 'btn_printer' },
-      { type: 'button', text: { type: 'plain_text', text: ':busts_in_silhouette:구성원 자리 확인' }, action_id: 'btn_desk' },
-      { type: 'button', text: { type: 'plain_text', text: '기타 요청' }, action_id: 'btn_other_office' },
-    ],
-  },
-]);
-
-// 버튼별 기본 메시지 (원본 내용 유지)
-const Messages = {
-  btn_repair: '*[:computer:장비 수리]* \n언제부터 어떤 증상이 있었는지 자세히 말씀해주세요. \n• 시점: \n• 증상:',
-  btn_drive: '*[:drive_icon:구글 드라이브]* \n어떤 도움이 필요하신가요? \n• 내용: 드라이브 이동 / 권한 설정 \n• 사유:',
-  btn_ms_office: '*[MS OFFICE]* \n업무 상 불가피한 경우(ex. 비밀번호가 걸린 엑셀 파일)가 아니라면 구글 워크스페이스를 활용해 주세요.\n불가피한 경우에는 <#C04NUTT5771|chat_office> 채널에 요청 사유와 함께 요청해 주세요. (cc. <@U08L6553LEL>)',
-  btn_adobe: '*[ADOBE]* \n어떤 프로그램이 필요하신가요? (cc. <@U08L6553LEL>)\n• Photoshop\n• Premiere Pro\n• Illustrator\n• 기타',
-  btn_sandoll: '*[산돌구름]* \n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|산돌구름 홈페이지 {
     type: 'section',
     text: { type: 'mrkdwn', text: '*HR 관련 문의*' },
   },
