@@ -28,7 +28,7 @@ let userState = {}; // { userId: { step, requestText, threadTs, lastActionId, la
 // 버튼 ID -> 순수 제목 맵
 const actionIdToTitle = {
   btn_repair: ':computer:장비 수리',
-  btn_drive: ':drive_icon:드라이브 이동 요청',
+  btn_drive: ':drive_icon:구글 드라이브',
   btn_ms_office: 'MS OFFICE',
   btn_adobe: 'ADOBE',
   btn_sandoll: '산돌구름',
@@ -59,7 +59,7 @@ const Blocks = () => ([
     type: 'actions',
     elements: [
       { type: 'button', text: { type: 'plain_text', text: ':computer:장비 수리' }, action_id: 'btn_repair' },
-      { type: 'button', text: { type: 'plain_text', text: ':drive_icon:드라이브 이동 요청' }, action_id: 'btn_drive' },
+      { type: 'button', text: { type: 'plain_text', text: ':drive_icon:구글 드라이브' }, action_id: 'btn_drive' },
     ],
   },
   {
