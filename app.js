@@ -174,10 +174,11 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   });
 
   // 2. 같은 공개 채널 스레드에 제목 + 요청사항
+  const quotedText = requestText.split('\n').map(line => `> ${line}`).join('\n');
   await client.chat.postMessage({
     channel: channelId,
     thread_ts: result.ts,
-    text: `*[${actionText}]*\n*요청자:* <@${userId}>\n*내용:*\n${requestText}`,
+    text: `*[${actionText}]*\n*요청자:* <@${userId}>\n*내용:*\n${quotedText}`,
   });
 
   // 3. DM 스레드에 완료 안내
