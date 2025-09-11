@@ -19,7 +19,7 @@ const app = new App({
 });
 
 // 관리자 호출용 공개 채널 및 담당자 ID
-const channelId = 'C096E2QQN49';    // 테스트용 공개 채널
+const channelId = 'C04NUTT5771';    // 테스트용 공개 채널
 const managerId = 'U08L6553LEL';    // 담당자 유저 ID
 
 // 대화 상태 저장소 (메모리 기반)
