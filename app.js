@@ -187,6 +187,12 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
     });
 
     await client.chat.postMessage({
+    channel: channelId,
+    thread_ts: result.ts,
+    text: `*요청자:* <@${userId}>`
+    });
+  
+    await client.chat.postMessage({
       channel: channelIdDM,
       thread_ts: state.threadTs,
       text: "담당자에게 2차 인증 요청을 전달했습니다. 잠시만 기다려주세요.",
