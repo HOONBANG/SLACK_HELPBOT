@@ -155,23 +155,44 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   const threadTs = body.message.ts;
   const actionId = action.action_id;
   const state = userState[userId] || {};
-  
-    // ----- 즉시 호출: 2차 인증 (btn_admin) -----
-    if (actionId === 'btn_admin') {
-      // 공개 채널에 바로 알림
-      await client.chat.postMessage({
-        channel: channelId,
-        text: `<@${managerId}> contact@bitelab.co.kr 계정의 2차 인증 요청이 들어왔습니다.`,
-      });
 
-      // DM 스레드에 완료 안내
-      await client.chat.postMessage({
-        channel: channelIdDM,
-        thread_ts: threadTs,
-        text: "2차 인증번호 요청을 담당자에게 전달했습니다. 잠시만 기다려주세요.",
-      });
+  // --- btn_admin 클릭 시 안내 + 담당자 호출 버튼 ---
+  if (actionId === 'btn_admin') {
+    await client.chat.postMessage({
+      channel: channelIdDM,
+      thread_ts: threadTs,
+      text: '2차 인증번호 요청 안내',
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '*[2차 인증번호 요청]*\ncontact@bitelab.co.kr 계정의 2차 인증이 필요하신 경우, 아래 버튼을 눌러 담당자를 호출해주세요. 😊',
+          },
+        },
+        {
+          type: 'actions',
+          elements: [
+            {
+              type: 'button',
+              text: { type: 'plain_text', text: ':bellhop_bell: 담당자 호출' },
+              style: 'primary',
+              action_id: 'btn_call_manager',
+            },
+          ],
+        },
+      ],
+    });
 
-      // 상태 정리
+    userState[userId] = {
+      step: 'none',
+      threadTs,
+      lastActionId: actionId,
+      lastActionText: actionIdToTitle[actionId] || '',
+    };
+    return;
+  }
+
       delete userState[userId];
       return;
     }
