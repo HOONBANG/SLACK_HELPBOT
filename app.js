@@ -124,7 +124,7 @@ const Messages = {
 
 // 담당자 호출 버튼 목록
 const callManagerButtons = new Set([
-  'btn_repair','btn_drive','btn_ms_office','btn_adobe','btn_sandoll','btn_other_license','btn_docs','btn_admin','btn_other_office'
+  'btn_repair','btn_drive','btn_ms_office','btn_adobe','btn_sandoll','btn_other_license','btn_docs','btn_other_office'
 ]);
 
 // --- DM에서 메시지 오면 (단, @헬프봇 멘션 포함 시에만) ---
@@ -155,7 +155,27 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   const threadTs = body.message.ts;
   const actionId = action.action_id;
   const state = userState[userId] || {};
+  
+    // ----- 즉시 호출: 2차 인증 (btn_admin) -----
+    if (actionId === 'btn_admin') {
+      // 공개 채널에 바로 알림
+      await client.chat.postMessage({
+        channel: channelId,
+        text: `<@${managerId}> contact@bitelab.co.kr 계정의 2차 인증 요청이 들어왔습니다.`,
+      });
 
+      // DM 스레드에 완료 안내
+      await client.chat.postMessage({
+        channel: channelIdDM,
+        thread_ts: threadTs,
+        text: "2차 인증번호 요청을 담당자에게 전달했습니다. 잠시만 기다려주세요.",
+      });
+
+      // 상태 정리
+      delete userState[userId];
+      return;
+    }
+  
   if (actionId === 'btn_call_manager') {
   const state = userState[userId];
   const requestText = state?.requestText || '';
