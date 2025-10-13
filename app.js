@@ -157,7 +157,7 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       blocks: [
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*[2차 인증번호 요청]*\ncontact@bitelab.co.kr계정의 2차 인증이 필요하신 경우, 담당자를 호출해주세요. 😊' },
+          text: { type: 'mrkdwn', text: '*[2차 인증번호 요청]*\ncontact@bitelab.co.kr 계정의 2차 인증이 필요하신 경우, 담당자를 호출해주세요. 😊' },
         },
         {
           type: 'actions',
