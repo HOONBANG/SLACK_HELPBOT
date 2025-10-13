@@ -117,6 +117,7 @@ const Messages = {
   btn_oa: '*[:toolbox:OA존 물품]* \n사무실 OA존에는 업무에 필요한 사무용품들이 보관되어 있습니다.\nOA존에 없는 사무용품이 필요하실 경우, <https://flex.team/workflow/archive/my?tab=in-progress&workflow-action=create&workflow-template-key=fd1367a24e2743e3ad18e5f112cd50de|비품 신청 워크플로우>를 통해 신청 부탁드립니다.\n\n*:file_folder:문서 정리 및 보관류*\n• L자 파일홀더, 정부파일, 용지(A3,A4), 포스트잇, 견출지\n\n*:pencil2:필기구류*\n• 노트, 형광펜, 삼생볼펜, 네임펜, 수정테이프, 보드마카/지우개\n\n*:scissors:문서 편집 및 수정보조*\n• 칼, 가위, 풀, 테이프, 스테이플러, 펀칭기, 코팅기\n\n*:battery:기타 사무용품*\n• 건전지\n\n*:pill:구급상자*\n• 상비약, 반창고, 소독약, 알콜스왑, 압박붕대 등',
   btn_printer: '*[:printer:복합기 연결]* \n복합기는 <https://www.notion.so/63bc4239f470436abf83077e7152a635?source=copy_link#55c02590188b4dfd88923711bf303804|복합기 설정> 페이지에 적힌 설명을 참고하여 설치해주시면 스캔, 인쇄 등에 활용하실 수 있습니다. \n\n만약 복합기 연결 및 사용에 어려움이 있으신 경우, 업체에 직접 지원을 요청해주시면 가장 빠르게 도움 받으실 수 있습니다. 아래 2가지 방법 중 편하신 방법으로 요청해주세요.\n1. 복합기 상단 QR코드 통해 A/S 요청\n2. 복합기 업체(1566-3505)로 전화하셔서 "바이트랩 직원"이라고 말씀하시면, 원격 지원을 받을 수 있습니다. (10분 이내)',
   btn_desk: '*[:busts_in_silhouette:구성원 자리 확인]* \n구성원 자리는 아래 링크에서 확인 가능합니다. \n<https://docs.google.com/spreadsheets/d/1fpPfYgudlI0uDqAn3r9wR2HYkrmZysZaz7fyPqs-bIQ/edit?gid=10814374#gid=10814374|바이트랩 자리배치도>',
+  btn_admin: '*[2차 인증번호 요청]* \ncontact@bitelab.co.kr 계정의 2차 인증이 필요하신 경우, 담당자를 호출해주세요. 😊',
   btn_other_office: '*[기타 요청]* \n어떤 도움이 필요하신가요? 😊',
 };
 
@@ -157,12 +158,15 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
       blocks: [
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*[2차 인증번호 요청]*\ncontact@bitelab.co.kr 계정의 2차 인증이 필요하신 경우, 담당자를 호출해주세요. 😊' },
+          text: {
+            type: 'mrkdwn',
+            text: Messages[actionId],
+          },
         },
         {
           type: 'actions',
           elements: [
-            { type: 'button', text: { type: 'plain_text', text: ':bellhop_bell: 담당자 호출' }, style: 'primary', action_id: 'btn_call_manager' },
+            { type: 'button', text: { type: 'plain_text', text: ':bellhop_bell: 담당자 호출' }, style: 'primary', action_id: 'btn_call_admin' },
           ],
         },
       ],
@@ -176,6 +180,22 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
     return;
   }
 
+  if (actionId === 'btn_call_admin') {
+    await client.chat.postMessage({
+      channel: channelId,
+      text: `<@${managerId}> 확인 부탁드립니다. (2차 인증 요청)`
+    });
+
+    await client.chat.postMessage({
+      channel: channelIdDM,
+      thread_ts: state.threadTs,
+      text: "담당자에게 2차 인증 요청을 전달했습니다. 잠시만 기다려주세요.",
+    });
+
+    delete userState[userId];
+    return;
+  }
+  
   // --- 다시 작성 버튼 ---
   if (actionId === 'btn_rewrite') {
     const prevState = userState[userId];
