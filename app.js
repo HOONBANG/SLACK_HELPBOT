@@ -181,7 +181,7 @@ app.action(/^(btn_.*)$/, async ({ ack, body, client, action }) => {
   }
 
   if (actionId === 'btn_call_admin') {
-    await client.chat.postMessage({
+    const result = await client.chat.postMessage({
       channel: channelId,
       text: `<@${managerId}> 확인 부탁드립니다. (2차 인증 요청)`
     });
