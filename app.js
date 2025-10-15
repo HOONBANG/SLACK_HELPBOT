@@ -270,7 +270,7 @@ app.action('btn_call_manager', async ({ ack, body, client }) => {
 
   // DM 안내
   await client.chat.postMessage({
-    channel: state.threadTs,
+    channel: body.channel.id,
     thread_ts: state.threadTs,
     text: "담당자에게 요청을 전달했습니다. 잠시만 기다려주세요.",
   });
