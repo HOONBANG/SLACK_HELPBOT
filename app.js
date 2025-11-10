@@ -35,7 +35,7 @@ const managerMap = {
   btn_other_office: 'U08L6553LEL', // 기타 요청 (IT/총무)
 
   // HR서류 담당자: Brian
-  btn_docs: 'D08L2CP5LF5',
+  btn_docs: 'U06GRNQULKZ',
 };
 
 // 담당자 ID를 가져오는 헬퍼 함수
