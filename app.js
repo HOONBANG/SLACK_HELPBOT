@@ -23,7 +23,7 @@ const channelId = 'C04NUTT5771'; // 공개 채널
 
 // --- 기능별 담당자 맵 (담당자 ID가 여러 개로 분리됨) ---
 const managerMap = {
-  // 기본/IT/총무 담당자 (기존 managerId 역할)
+  // 총무 담당자: Hoon
   default: 'U08L6553LEL', 
   btn_repair: 'U08L6553LEL',
   btn_drive: 'U08L6553LEL',
@@ -34,7 +34,7 @@ const managerMap = {
   btn_admin: 'U08L6553LEL', // 2차 인증 요청 (IT/총무)
   btn_other_office: 'U08L6553LEL', // 기타 요청 (IT/총무)
 
-  // HR/서류 담당자 (새로 추가된 담당자)
+  // HR서류 담당자: Brian
   btn_docs: 'D08L2CP5LF5',
 };
 
