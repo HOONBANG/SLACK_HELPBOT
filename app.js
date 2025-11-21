@@ -23,16 +23,16 @@ const channelId = 'C04NUTT5771'; // 공개 채널
 
 // --- 기능별 담당자 맵 (담당자 ID가 여러 개로 분리됨) ---
 const managerMap = {
-  // 총무 담당자: Hoon
-  default: 'U08L6553LEL', 
-  btn_repair: 'U08L6553LEL',
-  btn_drive: 'U08L6553LEL',
-  btn_ms_office: 'U08L6553LEL',
-  btn_adobe: 'U08L6553LEL',
-  btn_sandoll: 'U08L6553LEL',
-  btn_other_license: 'U08L6553LEL',
-  btn_admin: 'U08L6553LEL', // 2차 인증 요청 (IT/총무)
-  btn_other_office: 'U08L6553LEL', // 기타 요청 (IT/총무)
+  // 총무 담당자: Hoon   //  'U08L6553LEL'
+  default: 'U06GRNQULKZ', 
+  btn_repair: 'U06GRNQULKZ',
+  btn_drive: 'U06GRNQULKZ',
+  btn_ms_office: 'U06GRNQULKZ',
+  btn_adobe: 'U06GRNQULKZ',
+  btn_sandoll: 'U06GRNQULKZ',
+  btn_other_license: 'U06GRNQULKZ',
+  btn_admin: 'U06GRNQULKZ', // 2차 인증 요청 (IT/총무)
+  btn_other_office: 'U06GRNQULKZ', // 기타 요청 (IT/총무)
 
   // HR서류 담당자: Brian
   btn_docs: 'U06GRNQULKZ',
